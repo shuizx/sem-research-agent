@@ -5,3 +5,5 @@
 *.yaml text eol=lf
 *.md text eol=lf
 *.lock text eol=lf
+*.pgm binary
+*.png binary
