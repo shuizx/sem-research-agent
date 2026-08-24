@@ -77,6 +77,7 @@ def test_settings_parse_only_supported_environment_and_redact_key() -> None:
             "VRO_RESEARCH_OVERLAP_MINUTES": "30",
             "VRO_RESEARCH_INITIAL_LOOKBACK_HOURS": "48",
             "VRO_ARXIV_TIMEOUT_SECONDS": "15",
+            "VRO_DATASET_ROOT": "  ",
         }
     )
     assert settings.llm_base_url == DASHSCOPE_OPENAI_BASE_URL
@@ -86,6 +87,7 @@ def test_settings_parse_only_supported_environment_and_redact_key() -> None:
     assert settings.research_overlap_minutes == 30
     assert settings.research_initial_lookback_hours == 48
     assert settings.arxiv_timeout_seconds == 15
+    assert settings.dataset_root is None
 
 
 def test_live_llm_factory_requires_key_and_passes_secret_to_chat_openai(monkeypatch) -> None:

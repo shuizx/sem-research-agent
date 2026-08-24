@@ -182,9 +182,14 @@ def repository_result(*, supported: bool = True, commit_sha: str = FIXED_SHA) ->
 
 
 def load_dataset_profile() -> DatasetProfile:
-    """Load the committed de-identified synthetic SEM-style profile."""
-    path = Path(__file__).parents[2] / "fixtures" / "datasets" / "synthetic_sem_profile.json"
-    return DatasetProfile.model_validate_json(path.read_text(encoding="utf-8"))
+    """Generate the sample profile from its committed synthetic image directory."""
+    from vision_research_ops.application.services.dataset_profiling import profile_dataset
+
+    root = Path(__file__).parents[2]
+    return profile_dataset(
+        root / "fixtures" / "datasets" / "synthetic_sem_images",
+        output_root=root / "var" / "test-dataset-profiles",
+    ).profile
 
 
 @dataclass(slots=True)

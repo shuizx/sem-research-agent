@@ -1,0 +1,25 @@
+{
+  "schema_version": "1",
+  "dataset_id": "dataset-synthetic-sem-1",
+  "version": "synthetic-sem-v1",
+  "display_name": "Synthetic SEM-style defect fixture",
+  "created_at": "2026-08-12T00:00:00Z",
+  "source_kind": "SYNTHETIC",
+  "task_type": "IMAGE_CLASSIFICATION",
+  "modality": "GRAYSCALE",
+  "channels": 1,
+  "labels": [
+    {"source_key": "source-a", "label_id": "label-bridge", "name": "bridge"},
+    {"source_key": "source-b", "label_id": "label-particle", "name": "particle"},
+    {"source_key": "source-c", "label_id": "label-scratch", "name": "scratch"},
+    {"source_key": "source-d", "label_id": "label-void", "name": "void"}
+  ],
+  "split_policy": {
+    "strategy": "GROUP_HOLDOUT",
+    "group_key": "wafer_group",
+    "seed": 7,
+    "test_fraction": 0.25,
+    "validation_fraction": 0.25
+  },
+  "preprocessing_contract": {"normalization": "unit_interval", "resize": 32}
+}

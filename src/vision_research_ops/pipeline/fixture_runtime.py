@@ -45,6 +45,7 @@ from vision_research_ops.application.research_runtime import ResearchDependencie
 from vision_research_ops.application.runtime import InMemoryApprovalRecorder
 from vision_research_ops.application.services.adaptation_models import AdaptationResult
 from vision_research_ops.application.services.adaptation_store import LocalAdaptationStore
+from vision_research_ops.application.services.dataset_profiling import profile_dataset
 from vision_research_ops.application.services.evaluation_models import (
     EvaluationInitialInput,
     EvaluationResult,
@@ -475,8 +476,11 @@ class FixturePipelineStageDriver:
         )
 
     def _dataset_profile(self) -> DatasetProfile:
-        path = self.source_root / "fixtures" / "datasets" / "synthetic_sem_profile.json"
-        return DatasetProfile.model_validate_json(path.read_text(encoding="utf-8"))
+        """Generate the adaptation profile from the committed synthetic image sample."""
+        return profile_dataset(
+            self.source_root / "fixtures" / "datasets" / "synthetic_sem_images",
+            output_root=self.var_root / "dataset-profiles",
+        ).profile
 
     def _adaptation_stage(self, pipeline_workflow_id: str) -> _ChildStage:
         workflow_id = self._stage_workflow_id(pipeline_workflow_id, "adaptation")

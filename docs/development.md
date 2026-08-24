@@ -11,6 +11,9 @@ uv sync --all-groups --locked
 Do not commit `.env`, generated workspaces, downloaded repositories, model outputs, or local
 dataset paths. Runtime artifacts belong below `var/`.
 
+When exercising local dataset profiling, use a temporary or explicitly authorized root. Keep the
+root outside committed fixtures, and assert path-free CLI output and profile JSON in tests.
+
 ## Quality checks
 
 Run the offline quality gate before committing:

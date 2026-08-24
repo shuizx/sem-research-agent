@@ -1,0 +1,9 @@
+relative_path,source_label,split,group_id
+images/0001.pgm,source-a,train,group-01
+images/0002.pgm,source-b,train,group-02
+images/0003.pgm,source-c,train,group-03
+images/0004.pgm,source-d,train,group-04
+images/0005.pgm,source-a,validation,group-05
+images/0006.pgm,source-b,validation,group-06
+images/0007.pgm,source-c,test,group-07
+images/0008.pgm,source-d,test,group-08

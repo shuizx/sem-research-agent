@@ -105,6 +105,21 @@ To inspect the interface without contacting external services:
 `VRO_DATASET_ROOT` is reserved for local dataset-profile integration and is blank by default. The
 bundled sample does not require a private dataset path.
 
+### Local dataset profile
+
+Inspect an explicitly supplied local image directory without sending image data or local paths to
+the workflow:
+
+```powershell
+uv run python -m vision_research_ops.cli.dataset_profile `
+  --dataset-root <approved-dataset-root>
+```
+
+The root must contain `dataset.json`, `samples.csv`, and `images/`. The profiler accepts only
+standard PNG or PGM images, rejects symlinks and non-canonical paths, and writes a sanitized
+profile below `var/dataset-profiles/`. The command emits only the dataset ID, version, content
+hash, sample count, and relative profile reference.
+
 ## Sample mode and evidence
 
 Sample inputs live under `fixtures/` and are intentionally small. They exercise the same graphs,

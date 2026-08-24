@@ -33,6 +33,29 @@ internal endpoints.
 A dataset profile is versioned evidence, not a permanent constant. Image, label, split, or
 preprocessing changes require a new fingerprint and regenerated profile.
 
+## Local profiling contract
+
+Profiling starts only from `VRO_DATASET_ROOT` or an explicit `--dataset-root` value; there is no
+directory discovery or fallback. A root contains exactly these inputs:
+
+```text
+dataset.json
+samples.csv              # relative_path,source_label,split,group_id
+images/**                # PNG or PGM
+```
+
+The manifest fixes the dataset ID, version, creation time, source kind, de-identified label map,
+channel count, split policy, and preprocessing contract. The local profiler verifies every image
+listed by the CSV, rejects extra files, symlinks, unsafe relative paths, unknown labels, malformed
+headers, and groups that cross splits. It derives counts and image shape from the files rather
+than accepting them as profile facts.
+
+The generated `DatasetProfile` contains opaque location and content references only. It never
+contains the supplied root, sample paths, source labels, group identifiers, or image bytes. A
+different content hash for an existing dataset ID/version is rejected instead of overwriting the
+stored profile. The bundled sample follows this same profiling path for adaptation; local training
+and evaluation remain bound to their committed synthetic inputs.
+
 ## Other boundaries
 
 - DashScope credentials are loaded from the environment at the CLI boundary and are redacted from

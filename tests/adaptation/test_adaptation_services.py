@@ -200,5 +200,5 @@ def test_dataset_fixture_is_relative_and_synthetic() -> None:
         "profile_use_allowed": True,
         "source_kind": "SYNTHETIC",
     }
-    assert profile.location_ref == "fixture-dataset-handle"
+    assert profile.location_ref.startswith("dataset-handle-")
     assert not Path(profile.location_ref).is_absolute()
