@@ -1,0 +1,71 @@
+{
+  "$defs": {
+    "ISODate": {
+      "format": "date",
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Research retrieval query and optional inclusive calendar-date window.",
+  "properties": {
+    "date_from": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ISODate"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "date_to": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ISODate"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "domains": {
+      "items": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "title": "Domains",
+      "type": "array"
+    },
+    "excluded_terms": {
+      "items": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "title": "Excluded Terms",
+      "type": "array"
+    },
+    "keywords": {
+      "items": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "minItems": 1,
+      "title": "Keywords",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "keywords"
+  ],
+  "title": "QuerySpec",
+  "type": "object"
+}

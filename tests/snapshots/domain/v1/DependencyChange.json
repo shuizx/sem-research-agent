@@ -1,0 +1,71 @@
+{
+  "$defs": {
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One requested dependency mutation in an adaptation plan.",
+  "properties": {
+    "action": {
+      "enum": [
+        "ADD",
+        "REMOVE",
+        "PIN"
+      ],
+      "title": "Action",
+      "type": "string"
+    },
+    "dependency_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "package": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/HumanText"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "version_constraint": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "schema_version",
+    "dependency_id",
+    "package",
+    "action"
+  ],
+  "title": "DependencyChange",
+  "type": "object"
+}

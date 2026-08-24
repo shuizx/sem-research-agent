@@ -1,0 +1,311 @@
+{
+  "$defs": {
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "ImageChannelCount": {
+      "enum": [
+        1,
+        3
+      ],
+      "type": "integer"
+    },
+    "JsonObject": {
+      "additionalProperties": {
+        "$ref": "#/$defs/vision_research_ops__domain__errors__JsonValue"
+      },
+      "type": "object"
+    },
+    "LabelSpec": {
+      "additionalProperties": false,
+      "description": "One label in a dataset profile.",
+      "properties": {
+        "is_unknown": {
+          "$ref": "#/$defs/StrictBoolean",
+          "default": false
+        },
+        "label_id": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "name": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "severity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SeverityLevel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "schema_version",
+        "label_id",
+        "name"
+      ],
+      "title": "LabelSpec",
+      "type": "object"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpenUnitInterval": {
+      "exclusiveMaximum": 1.0,
+      "exclusiveMinimum": 0.0,
+      "type": "number"
+    },
+    "SeverityLevel": {
+      "description": "Unified severity vocabulary for labels, gaps, and findings.",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "SeverityLevel",
+      "type": "string"
+    },
+    "SplitPolicy": {
+      "additionalProperties": false,
+      "description": "Declarative split contract; generation remains a later adaptation responsibility.",
+      "properties": {
+        "group_keys": {
+          "items": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Group Keys",
+          "type": "array"
+        },
+        "holdout_values": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/NonBlankStr"
+            },
+            "type": "array"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Holdout Values",
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeInt"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "strategy": {
+          "$ref": "#/$defs/SplitStrategy"
+        },
+        "test_fraction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OpenUnitInterval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "time_cutoff": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UTCDateTime"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "time_key": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonBlankStr"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "validation_fraction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OpenUnitInterval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "schema_version",
+        "strategy"
+      ],
+      "title": "SplitPolicy",
+      "type": "object"
+    },
+    "SplitStrategy": {
+      "description": "Supported deterministic split-policy families.",
+      "enum": [
+        "TIME_EXTRAPOLATION",
+        "GROUP_HOLDOUT",
+        "DOMAIN_HOLDOUT",
+        "SAMPLE_STRATIFIED"
+      ],
+      "title": "SplitStrategy",
+      "type": "string"
+    },
+    "StrictBoolean": {
+      "type": "boolean"
+    },
+    "TaskType": {
+      "description": "Task family supported by the MVP (only image classification).",
+      "enum": [
+        "IMAGE_CLASSIFICATION"
+      ],
+      "title": "TaskType",
+      "type": "string"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "pydantic__types__JsonValue": {},
+    "vision_research_ops__domain__errors__JsonValue": {
+      "$ref": "#/$defs/pydantic__types__JsonValue"
+    }
+  },
+  "additionalProperties": false,
+  "description": "De-identified dataset description card with descriptive JSON only.",
+  "properties": {
+    "authorization": {
+      "$ref": "#/$defs/JsonObject"
+    },
+    "channels": {
+      "$ref": "#/$defs/ImageChannelCount"
+    },
+    "content_hash": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "created_at": {
+      "$ref": "#/$defs/UTCDateTime"
+    },
+    "dataset_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "display_name": {
+      "$ref": "#/$defs/HumanText"
+    },
+    "group_keys": {
+      "items": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "title": "Group Keys",
+      "type": "array"
+    },
+    "image_shape_policy": {
+      "$ref": "#/$defs/JsonObject"
+    },
+    "label_schema": {
+      "items": {
+        "$ref": "#/$defs/LabelSpec"
+      },
+      "title": "Label Schema",
+      "type": "array"
+    },
+    "location_ref": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "modality": {
+      "enum": [
+        "RGB",
+        "GRAYSCALE",
+        "PSEUDOCOLOR",
+        "OTHER"
+      ],
+      "title": "Modality",
+      "type": "string"
+    },
+    "preprocessing_contract": {
+      "$ref": "#/$defs/JsonObject"
+    },
+    "sample_counts": {
+      "$ref": "#/$defs/JsonObject"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "split_policy": {
+      "$ref": "#/$defs/SplitPolicy"
+    },
+    "task_type": {
+      "$ref": "#/$defs/TaskType"
+    },
+    "version": {
+      "$ref": "#/$defs/NonBlankStr"
+    }
+  },
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "version",
+    "display_name",
+    "task_type",
+    "modality",
+    "channels",
+    "image_shape_policy",
+    "label_schema",
+    "sample_counts",
+    "group_keys",
+    "split_policy",
+    "location_ref",
+    "content_hash",
+    "authorization",
+    "preprocessing_contract",
+    "created_at"
+  ],
+  "title": "DatasetProfile",
+  "type": "object"
+}

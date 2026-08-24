@@ -1,0 +1,41 @@
+{
+  "$defs": {
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A paper author and optional external identity reference.",
+  "properties": {
+    "external_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "name": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "name"
+  ],
+  "title": "AuthorRef",
+  "type": "object"
+}

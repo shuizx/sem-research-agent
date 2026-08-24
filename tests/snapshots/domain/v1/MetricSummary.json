@@ -1,0 +1,81 @@
+{
+  "$defs": {
+    "FiniteFloat": {
+      "type": "number"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeFiniteFloat": {
+      "minimum": 0.0,
+      "type": "number"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Finite aggregate metric summary across comparable runs.",
+  "properties": {
+    "ci_lower": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FiniteFloat"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "ci_upper": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FiniteFloat"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "delta_mean": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FiniteFloat"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "mean": {
+      "$ref": "#/$defs/FiniteFloat"
+    },
+    "metric_name": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "spread": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NonNegativeFiniteFloat"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "schema_version",
+    "metric_name",
+    "mean"
+  ],
+  "title": "MetricSummary",
+  "type": "object"
+}

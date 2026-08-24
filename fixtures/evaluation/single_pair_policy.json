@@ -1,0 +1,25 @@
+{
+  "conclusion_policy_version": "single-pair-threshold-v1",
+  "dataset_id": "dataset-synthetic-sem-1",
+  "dataset_version": "synthetic-sem-v1",
+  "label_ids": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "label_names": [
+    "bridge",
+    "particle",
+    "scratch",
+    "void"
+  ],
+  "max_severe_recall_drop": 0.0,
+  "metric_implementation_version": "classification-metrics-v1",
+  "minimum_practical_delta": 0.01,
+  "policy_id": "p5-single-pair-fixture-v1",
+  "primary_metric": "macro_f1",
+  "probability_sum_tolerance": 1e-09,
+  "schema_version": "1",
+  "severe_class_id": 3
+}

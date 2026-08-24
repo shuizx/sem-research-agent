@@ -1,0 +1,47 @@
+{
+  "$defs": {
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Execution-stage structured command with a resolved trusted cwd reference.",
+  "properties": {
+    "argv": {
+      "items": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "title": "Argv",
+      "type": "array"
+    },
+    "cwd_ref": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "env_refs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "title": "Env Refs",
+      "type": "object"
+    },
+    "executable_id": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "executable_id",
+    "cwd_ref"
+  ],
+  "title": "CommandSpec",
+  "type": "object"
+}

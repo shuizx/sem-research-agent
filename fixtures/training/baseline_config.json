@@ -1,0 +1,8 @@
+{
+  "class_count": 4,
+  "feature_mode": "GLOBAL_STATS",
+  "learning_rate": 0.15,
+  "method": "GLOBAL_STATS_LINEAR",
+  "schema_version": "1",
+  "weight_decay": 0.0
+}

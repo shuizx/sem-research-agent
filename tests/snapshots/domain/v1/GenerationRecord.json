@@ -1,0 +1,50 @@
+{
+  "$defs": {
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Credential-free provider/model/prompt/output provenance for generation.",
+  "properties": {
+    "model_id": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "output_hash": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "prompt_hash": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "prompt_template_id": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "prompt_version": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "provider_id": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "provider_id",
+    "model_id",
+    "prompt_template_id",
+    "prompt_version",
+    "prompt_hash",
+    "output_hash"
+  ],
+  "title": "GenerationRecord",
+  "type": "object"
+}

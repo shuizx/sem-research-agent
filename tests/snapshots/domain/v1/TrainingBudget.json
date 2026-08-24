@@ -1,0 +1,52 @@
+{
+  "$defs": {
+    "PositiveInt": {
+      "exclusiveMinimum": 0,
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Hard run-budget limits shared by baseline and candidate execution.",
+  "properties": {
+    "max_epochs": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PositiveInt"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "max_steps": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PositiveInt"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "max_test_evaluations": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "max_walltime_seconds": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "max_walltime_seconds",
+    "max_test_evaluations"
+  ],
+  "title": "TrainingBudget",
+  "type": "object"
+}

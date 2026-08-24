@@ -1,0 +1,118 @@
+{
+  "$defs": {
+    "ArtifactKind": {
+      "description": "Kinds of immutable artifacts stored in the artifact store.",
+      "enum": [
+        "PROVIDER_SNAPSHOT",
+        "PAPER_METADATA",
+        "PAPER_DOCUMENT",
+        "REPOSITORY_ARCHIVE",
+        "REPOSITORY_ANALYSIS",
+        "ADAPTATION_PLAN",
+        "PATCH",
+        "BUILD_LOG",
+        "VALIDATION_LOG",
+        "EXPERIMENT_CONFIG",
+        "RUN_MANIFEST",
+        "TRAIN_LOG",
+        "METRICS",
+        "PREDICTIONS",
+        "MODEL",
+        "EVALUATION_DATA",
+        "REPORT",
+        "AUDIT_EXPORT"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "JsonObject": {
+      "additionalProperties": {
+        "$ref": "#/$defs/vision_research_ops__domain__errors__JsonValue"
+      },
+      "type": "object"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "pydantic__types__JsonValue": {},
+    "vision_research_ops__domain__errors__JsonValue": {
+      "$ref": "#/$defs/pydantic__types__JsonValue"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Reference to an immutable artifact and its de-sensitized metadata.",
+  "properties": {
+    "artifact_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "created_at": {
+      "$ref": "#/$defs/UTCDateTime"
+    },
+    "kind": {
+      "$ref": "#/$defs/ArtifactKind"
+    },
+    "media_type": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "metadata": {
+      "$ref": "#/$defs/JsonObject"
+    },
+    "producer": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sensitivity": {
+      "enum": [
+        "PUBLIC",
+        "INTERNAL",
+        "RESTRICTED"
+      ],
+      "title": "Sensitivity",
+      "type": "string"
+    },
+    "sha256": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "size_bytes": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "uri": {
+      "$ref": "#/$defs/NonBlankStr"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_id",
+    "kind",
+    "uri",
+    "sha256",
+    "size_bytes",
+    "media_type",
+    "created_at",
+    "producer",
+    "sensitivity"
+  ],
+  "title": "ArtifactRef",
+  "type": "object"
+}

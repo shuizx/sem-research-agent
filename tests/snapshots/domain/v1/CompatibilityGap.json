@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "SeverityLevel": {
+      "description": "Unified severity vocabulary for labels, gaps, and findings.",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "SeverityLevel",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Declared mismatch between repository behavior and SEM Research Agent requirements.",
+  "properties": {
+    "area": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "current_state": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "gap_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "required_state": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "risk": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SeverityLevel"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "gap_id",
+    "area",
+    "current_state",
+    "required_state"
+  ],
+  "title": "CompatibilityGap",
+  "type": "object"
+}

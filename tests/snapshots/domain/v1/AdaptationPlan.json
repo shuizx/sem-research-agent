@@ -1,0 +1,467 @@
+{
+  "$defs": {
+    "CommandSpec": {
+      "additionalProperties": false,
+      "description": "Execution-stage structured command with a resolved trusted cwd reference.",
+      "properties": {
+        "argv": {
+          "items": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Argv",
+          "type": "array"
+        },
+        "cwd_ref": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "env_refs": {
+          "additionalProperties": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Env Refs",
+          "type": "object"
+        },
+        "executable_id": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "executable_id",
+        "cwd_ref"
+      ],
+      "title": "CommandSpec",
+      "type": "object"
+    },
+    "CompatibilityGap": {
+      "additionalProperties": false,
+      "description": "Declared mismatch between repository behavior and SEM Research Agent requirements.",
+      "properties": {
+        "area": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "current_state": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "gap_id": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "required_state": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "risk": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SeverityLevel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "gap_id",
+        "area",
+        "current_state",
+        "required_state"
+      ],
+      "title": "CompatibilityGap",
+      "type": "object"
+    },
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "DependencyChange": {
+      "additionalProperties": false,
+      "description": "One requested dependency mutation in an adaptation plan.",
+      "properties": {
+        "action": {
+          "enum": [
+            "ADD",
+            "REMOVE",
+            "PIN"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "dependency_id": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "package": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HumanText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "version_constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonBlankStr"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "schema_version",
+        "dependency_id",
+        "package",
+        "action"
+      ],
+      "title": "DependencyChange",
+      "type": "object"
+    },
+    "GenerationRecord": {
+      "additionalProperties": false,
+      "description": "Credential-free provider/model/prompt/output provenance for generation.",
+      "properties": {
+        "model_id": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "output_hash": {
+          "$ref": "#/$defs/ContentHash"
+        },
+        "prompt_hash": {
+          "$ref": "#/$defs/ContentHash"
+        },
+        "prompt_template_id": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "prompt_version": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "provider_id": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "provider_id",
+        "model_id",
+        "prompt_template_id",
+        "prompt_version",
+        "prompt_hash",
+        "output_hash"
+      ],
+      "title": "GenerationRecord",
+      "type": "object"
+    },
+    "GitCommitSha": {
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+      "type": "string"
+    },
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "JsonObject": {
+      "additionalProperties": {
+        "$ref": "#/$defs/vision_research_ops__domain__errors__JsonValue"
+      },
+      "type": "object"
+    },
+    "NetworkAllowlistRef": {
+      "pattern": "^netref_[a-z0-9][a-z0-9_-]{0,63}$",
+      "type": "string"
+    },
+    "NetworkPolicy": {
+      "description": "Network capability requested by a resource specification.",
+      "enum": [
+        "NONE",
+        "ALLOWLIST"
+      ],
+      "title": "NetworkPolicy",
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "PlannedChange": {
+      "additionalProperties": false,
+      "description": "One planned repository file change.",
+      "properties": {
+        "action": {
+          "enum": [
+            "CREATE",
+            "MODIFY",
+            "DELETE"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "change_id": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "path": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HumanText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "change_id",
+        "path",
+        "action"
+      ],
+      "title": "PlannedChange",
+      "type": "object"
+    },
+    "PositiveFiniteFloat": {
+      "exclusiveMinimum": 0.0,
+      "type": "number"
+    },
+    "PositiveInt": {
+      "exclusiveMinimum": 0,
+      "type": "integer"
+    },
+    "ResourceRequest": {
+      "additionalProperties": false,
+      "description": "Bounded compute and network capability requested for one run.",
+      "properties": {
+        "cpu_cores": {
+          "$ref": "#/$defs/PositiveFiniteFloat"
+        },
+        "gpu_count": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "gpu_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonBlankStr"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "memory_mb": {
+          "$ref": "#/$defs/PositiveInt"
+        },
+        "network_allowlist_refs": {
+          "items": {
+            "$ref": "#/$defs/NetworkAllowlistRef"
+          },
+          "title": "Network Allowlist Refs",
+          "type": "array"
+        },
+        "network_policy": {
+          "$ref": "#/$defs/NetworkPolicy"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scratch_mb": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "walltime_seconds": {
+          "$ref": "#/$defs/PositiveInt"
+        }
+      },
+      "required": [
+        "schema_version",
+        "cpu_cores",
+        "memory_mb",
+        "gpu_count",
+        "walltime_seconds",
+        "scratch_mb",
+        "network_policy"
+      ],
+      "title": "ResourceRequest",
+      "type": "object"
+    },
+    "SeverityLevel": {
+      "description": "Unified severity vocabulary for labels, gaps, and findings.",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "SeverityLevel",
+      "type": "string"
+    },
+    "ValidationStage": {
+      "description": "Ordered stages of the smoke validation pipeline.",
+      "enum": [
+        "STATIC_POLICY",
+        "ENVIRONMENT_BUILD",
+        "IMPORT",
+        "ONE_BATCH",
+        "BOUNDED_OVERFIT",
+        "SHORT_TRAIN",
+        "OUTPUT_CONTRACT"
+      ],
+      "title": "ValidationStage",
+      "type": "string"
+    },
+    "pydantic__types__JsonValue": {},
+    "vision_research_ops__domain__errors__JsonValue": {
+      "$ref": "#/$defs/pydantic__types__JsonValue"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Structured, unexecuted adaptation plan for a fixed repository snapshot.",
+  "properties": {
+    "commands_requested": {
+      "items": {
+        "$ref": "#/$defs/CommandSpec"
+      },
+      "title": "Commands Requested",
+      "type": "array"
+    },
+    "commit_sha": {
+      "$ref": "#/$defs/GitCommitSha"
+    },
+    "data_access_plan": {
+      "$ref": "#/$defs/JsonObject"
+    },
+    "dataset_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "dataset_version": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "dependency_changes": {
+      "items": {
+        "$ref": "#/$defs/DependencyChange"
+      },
+      "title": "Dependency Changes",
+      "type": "array"
+    },
+    "estimated_resources": {
+      "$ref": "#/$defs/ResourceRequest"
+    },
+    "file_changes": {
+      "items": {
+        "$ref": "#/$defs/PlannedChange"
+      },
+      "title": "File Changes",
+      "type": "array"
+    },
+    "gaps": {
+      "items": {
+        "$ref": "#/$defs/CompatibilityGap"
+      },
+      "title": "Gaps",
+      "type": "array"
+    },
+    "generated_by": {
+      "$ref": "#/$defs/GenerationRecord"
+    },
+    "plan_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "repository_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "revision": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "DRAFT",
+        "APPROVED",
+        "REJECTED",
+        "SUPERSEDED"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "target_contract_version": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "validation_plan": {
+      "items": {
+        "$ref": "#/$defs/ValidationStage"
+      },
+      "title": "Validation Plan",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan_id",
+    "repository_id",
+    "commit_sha",
+    "dataset_id",
+    "dataset_version",
+    "target_contract_version",
+    "estimated_resources",
+    "generated_by",
+    "status",
+    "revision"
+  ],
+  "title": "AdaptationPlan",
+  "type": "object"
+}

@@ -1,0 +1,12 @@
+SEM Research Agent
+Copyright (c) 2026 shuizx
+
+This public distribution does not include proprietary company datasets, paths,
+identifiers, configurations, or evaluation results.
+
+The bundled synthetic sample assets were created for this project and are
+distributed under the repository's MIT License.
+
+Third-party repository snapshots downloaded at runtime are not distributed as
+part of this repository. Their use remains subject to the applicable upstream
+license terms.

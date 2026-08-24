@@ -1,0 +1,63 @@
+{
+  "$defs": {
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "SeverityLevel": {
+      "description": "Unified severity vocabulary for labels, gaps, and findings.",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "SeverityLevel",
+      "type": "string"
+    },
+    "StrictBoolean": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One label in a dataset profile.",
+  "properties": {
+    "is_unknown": {
+      "$ref": "#/$defs/StrictBoolean",
+      "default": false
+    },
+    "label_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "name": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "severity": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SeverityLevel"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "schema_version",
+    "label_id",
+    "name"
+  ],
+  "title": "LabelSpec",
+  "type": "object"
+}

@@ -1,0 +1,58 @@
+{
+  "$defs": {
+    "NonNegativeFiniteFloat": {
+      "minimum": 0.0,
+      "type": "number"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Explicit, caller-provided ceiling for research workflow capabilities.",
+  "properties": {
+    "max_adaptation_attempts": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "max_candidate_repositories": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "max_cost_estimate": {
+      "$ref": "#/$defs/NonNegativeFiniteFloat"
+    },
+    "max_llm_calls": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "max_llm_tokens": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "max_provider_pages": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "max_provider_records": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "max_workflow_walltime_seconds": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "max_provider_pages",
+    "max_provider_records",
+    "max_llm_calls",
+    "max_llm_tokens",
+    "max_cost_estimate",
+    "max_candidate_repositories",
+    "max_adaptation_attempts",
+    "max_workflow_walltime_seconds"
+  ],
+  "title": "ResearchBudget",
+  "type": "object"
+}

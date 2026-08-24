@@ -1,0 +1,165 @@
+{
+  "$defs": {
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "ReasonCode": {
+      "pattern": "^[A-Z0-9]+(?:_[A-Z0-9]+){2,}$",
+      "type": "string"
+    },
+    "StrictBoolean": {
+      "type": "boolean"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "ValidationStage": {
+      "description": "Ordered stages of the smoke validation pipeline.",
+      "enum": [
+        "STATIC_POLICY",
+        "ENVIRONMENT_BUILD",
+        "IMPORT",
+        "ONE_BATCH",
+        "BOUNDED_OVERFIT",
+        "SHORT_TRAIN",
+        "OUTPUT_CONTRACT"
+      ],
+      "title": "ValidationStage",
+      "type": "string"
+    },
+    "ValidationStatus": {
+      "description": "Result status of a validation stage.",
+      "enum": [
+        "PENDING",
+        "RUNNING",
+        "PASSED",
+        "FAILED",
+        "SKIPPED",
+        "BLOCKED"
+      ],
+      "title": "ValidationStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Status record for one bounded validation stage.",
+  "properties": {
+    "attempt_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "command_digest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ContentHash"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "environment_digest": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ContentHash"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "exit_code": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Exit Code"
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UTCDateTime"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "log_artifact_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "output_artifact_ids": {
+      "items": {
+        "$ref": "#/$defs/OpaqueId"
+      },
+      "title": "Output Artifact Ids",
+      "type": "array"
+    },
+    "reason_codes": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "retryable": {
+      "$ref": "#/$defs/StrictBoolean"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stage": {
+      "$ref": "#/$defs/ValidationStage"
+    },
+    "started_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UTCDateTime"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "status": {
+      "$ref": "#/$defs/ValidationStatus"
+    },
+    "validation_id": {
+      "$ref": "#/$defs/OpaqueId"
+    }
+  },
+  "required": [
+    "schema_version",
+    "validation_id",
+    "attempt_id",
+    "stage",
+    "status",
+    "retryable"
+  ],
+  "title": "ValidationResult",
+  "type": "object"
+}

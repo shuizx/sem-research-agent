@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:arxiv="http://arxiv.org/schemas/atom"
+      xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+  <title>arXiv Query Results</title>
+  <opensearch:totalResults>2</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <opensearch:itemsPerPage>2</opensearch:itemsPerPage>
+  <entry>
+    <id>http://arxiv.org/abs/2608.01234v1</id>
+    <updated>2026-08-11T10:00:00Z</updated>
+    <published>2026-08-11T10:00:00Z</published>
+    <title>PyTorch Classification of Wafer SEM Defects</title>
+    <summary>
+      We study image classification for imbalanced wafer SEM defect images. The public Python
+      PyTorch implementation is available at https://github.com/example/sem-classifier.
+    </summary>
+    <author><name>Ada Researcher</name></author>
+    <category term="cs.CV" />
+    <link href="https://arxiv.org/abs/2608.01234v1" rel="alternate" type="text/html" />
+    <link title="pdf" href="https://arxiv.org/pdf/2608.01234v1" rel="related" type="application/pdf" />
+    <arxiv:doi>10.1000/sem.2026.1</arxiv:doi>
+    <arxiv:comment>Python PyTorch code: https://github.com/example/sem-classifier</arxiv:comment>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2608.05678v1</id>
+    <updated>2026-08-11T09:00:00Z</updated>
+    <published>2026-08-11T09:00:00Z</published>
+    <title>Unsupervised Segmentation of Natural Photographs</title>
+    <summary>We segment natural RGB photographs without a released implementation.</summary>
+    <author><name>Lin Example</name></author>
+    <category term="cs.CV" />
+    <link href="https://arxiv.org/abs/2608.05678v1" rel="alternate" type="text/html" />
+  </entry>
+</feed>

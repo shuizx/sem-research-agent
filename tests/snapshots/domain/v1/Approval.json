@@ -1,0 +1,184 @@
+{
+  "$defs": {
+    "ApprovalDecision": {
+      "description": "Decisions a human reviewer can emit at a gate.",
+      "enum": [
+        "APPROVE",
+        "EDIT",
+        "REJECT"
+      ],
+      "title": "ApprovalDecision",
+      "type": "string"
+    },
+    "GateKind": {
+      "description": "Human approval gate kinds.",
+      "enum": [
+        "CANDIDATE_SELECTION",
+        "REPOSITORY_INGEST",
+        "PATCH_ACCEPTANCE",
+        "RUN_SUBMISSION",
+        "CANCELLATION"
+      ],
+      "title": "GateKind",
+      "type": "string"
+    },
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonRootJsonPointer": {
+      "minLength": 1,
+      "pattern": "^/(?:[^~/]|~[01])*(?:/(?:[^~/]|~[01])*)*$",
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "PatchOperation": {
+      "additionalProperties": false,
+      "description": "A SEM Research Agent structured edit; null clearing must use ``REMOVE`` instead.",
+      "properties": {
+        "op": {
+          "$ref": "#/$defs/PatchOperationType"
+        },
+        "path": {
+          "$ref": "#/$defs/NonRootJsonPointer"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HumanText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/vision_research_ops__domain__errors__JsonValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "schema_version",
+        "op",
+        "path"
+      ],
+      "title": "PatchOperation",
+      "type": "object"
+    },
+    "PatchOperationType": {
+      "description": "SEM Research Agent's structured edit operations (not a full RFC 6902 document).",
+      "enum": [
+        "ADD",
+        "REPLACE",
+        "REMOVE"
+      ],
+      "title": "PatchOperationType",
+      "type": "string"
+    },
+    "PositiveInt": {
+      "exclusiveMinimum": 0,
+      "type": "integer"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "pydantic__types__JsonValue": {},
+    "vision_research_ops__domain__errors__JsonValue": {
+      "$ref": "#/$defs/pydantic__types__JsonValue"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Human gate decision bound to an exact revision of one subject.",
+  "properties": {
+    "actor_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "approval_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "decided_at": {
+      "$ref": "#/$defs/UTCDateTime"
+    },
+    "decision": {
+      "$ref": "#/$defs/ApprovalDecision"
+    },
+    "edits": {
+      "items": {
+        "$ref": "#/$defs/PatchOperation"
+      },
+      "title": "Edits",
+      "type": "array"
+    },
+    "gate_kind": {
+      "$ref": "#/$defs/GateKind"
+    },
+    "idempotency_key": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "reason": {
+      "$ref": "#/$defs/HumanText"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "subject_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "subject_revision": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "subject_type": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "supersedes": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "schema_version",
+    "approval_id",
+    "gate_kind",
+    "subject_type",
+    "subject_id",
+    "subject_revision",
+    "decision",
+    "reason",
+    "actor_id",
+    "decided_at",
+    "idempotency_key"
+  ],
+  "title": "Approval",
+  "type": "object"
+}

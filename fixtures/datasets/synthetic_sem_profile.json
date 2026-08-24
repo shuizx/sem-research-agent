@@ -1,0 +1,73 @@
+{
+  "authorization": {
+    "profile_use_allowed": true,
+    "source_kind": "SYNTHETIC"
+  },
+  "channels": 1,
+  "content_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "created_at": "2026-08-12T00:00:00Z",
+  "dataset_id": "dataset-synthetic-sem-1",
+  "display_name": "Synthetic SEM-style defect fixture",
+  "group_keys": [
+    "wafer_group"
+  ],
+  "image_shape_policy": {
+    "height": 32,
+    "width": 32
+  },
+  "label_schema": [
+    {
+      "is_unknown": false,
+      "label_id": "label-bridge",
+      "name": "bridge",
+      "schema_version": "1",
+      "severity": "MEDIUM"
+    },
+    {
+      "is_unknown": false,
+      "label_id": "label-particle",
+      "name": "particle",
+      "schema_version": "1",
+      "severity": "LOW"
+    },
+    {
+      "is_unknown": false,
+      "label_id": "label-scratch",
+      "name": "scratch",
+      "schema_version": "1",
+      "severity": "HIGH"
+    },
+    {
+      "is_unknown": false,
+      "label_id": "label-void",
+      "name": "void",
+      "schema_version": "1",
+      "severity": "MEDIUM"
+    }
+  ],
+  "location_ref": "fixture-dataset-handle",
+  "modality": "GRAYSCALE",
+  "preprocessing_contract": {
+    "normalization": "unit_interval",
+    "resize": 32
+  },
+  "sample_counts": {
+    "total": 24
+  },
+  "schema_version": "1",
+  "split_policy": {
+    "group_keys": [
+      "wafer_group"
+    ],
+    "holdout_values": {},
+    "schema_version": "1",
+    "seed": 7,
+    "strategy": "GROUP_HOLDOUT",
+    "test_fraction": 0.25,
+    "time_cutoff": null,
+    "time_key": null,
+    "validation_fraction": 0.25
+  },
+  "task_type": "IMAGE_CLASSIFICATION",
+  "version": "synthetic-sem-v1"
+}

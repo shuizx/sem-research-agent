@@ -1,0 +1,232 @@
+{
+  "$defs": {
+    "CandidateLimit": {
+      "maximum": 100,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "ISODate": {
+      "format": "date",
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeFiniteFloat": {
+      "minimum": 0.0,
+      "type": "number"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "PositiveInt": {
+      "exclusiveMinimum": 0,
+      "type": "integer"
+    },
+    "QuerySpec": {
+      "additionalProperties": false,
+      "description": "Research retrieval query and optional inclusive calendar-date window.",
+      "properties": {
+        "date_from": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ISODate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "date_to": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ISODate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "domains": {
+          "items": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Domains",
+          "type": "array"
+        },
+        "excluded_terms": {
+          "items": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Excluded Terms",
+          "type": "array"
+        },
+        "keywords": {
+          "items": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "minItems": 1,
+          "title": "Keywords",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "keywords"
+      ],
+      "title": "QuerySpec",
+      "type": "object"
+    },
+    "ResearchBudget": {
+      "additionalProperties": false,
+      "description": "Explicit, caller-provided ceiling for research workflow capabilities.",
+      "properties": {
+        "max_adaptation_attempts": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "max_candidate_repositories": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "max_cost_estimate": {
+          "$ref": "#/$defs/NonNegativeFiniteFloat"
+        },
+        "max_llm_calls": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "max_llm_tokens": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "max_provider_pages": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "max_provider_records": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "max_workflow_walltime_seconds": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "max_provider_pages",
+        "max_provider_records",
+        "max_llm_calls",
+        "max_llm_tokens",
+        "max_cost_estimate",
+        "max_candidate_repositories",
+        "max_adaptation_attempts",
+        "max_workflow_walltime_seconds"
+      ],
+      "title": "ResearchBudget",
+      "type": "object"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "WorkflowStatus": {
+      "description": "Business-view status of a workflow.",
+      "enum": [
+        "PENDING",
+        "RUNNING",
+        "WAITING_FOR_HUMAN",
+        "WAITING_FOR_EXTERNAL",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED",
+        "REJECTED"
+      ],
+      "title": "WorkflowStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Versioned research request tied to a frozen dataset version and budget.",
+  "properties": {
+    "budget": {
+      "$ref": "#/$defs/ResearchBudget"
+    },
+    "candidate_limit": {
+      "$ref": "#/$defs/CandidateLimit",
+      "default": 20
+    },
+    "created_at": {
+      "$ref": "#/$defs/UTCDateTime"
+    },
+    "dataset_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "dataset_version": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "query_spec": {
+      "$ref": "#/$defs/QuerySpec"
+    },
+    "request_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "requested_by": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "research_question": {
+      "$ref": "#/$defs/HumanText"
+    },
+    "revision": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/WorkflowStatus"
+    },
+    "title": {
+      "$ref": "#/$defs/HumanText"
+    },
+    "updated_at": {
+      "$ref": "#/$defs/UTCDateTime"
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "revision",
+    "title",
+    "research_question",
+    "dataset_id",
+    "dataset_version",
+    "query_spec",
+    "budget",
+    "requested_by",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "ResearchRequest",
+  "type": "object"
+}

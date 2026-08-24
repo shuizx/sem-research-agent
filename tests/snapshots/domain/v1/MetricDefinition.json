@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "FiniteFloat": {
+      "type": "number"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "StrictBoolean": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Definition of one reproducible evaluation metric.",
+  "properties": {
+    "aggregation": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "direction": {
+      "enum": [
+        "MAXIMIZE",
+        "MINIMIZE"
+      ],
+      "title": "Direction",
+      "type": "string"
+    },
+    "implementation_version": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "minimum_practical_delta": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FiniteFloat"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "name": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "primary": {
+      "$ref": "#/$defs/StrictBoolean"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "name",
+    "direction",
+    "aggregation",
+    "implementation_version",
+    "primary"
+  ],
+  "title": "MetricDefinition",
+  "type": "object"
+}

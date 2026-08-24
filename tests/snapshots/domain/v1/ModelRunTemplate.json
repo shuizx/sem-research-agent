@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "GitCommitSha": {
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+      "type": "string"
+    },
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "RepositoryRelativePath": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "RunEntrypoint": {
+      "additionalProperties": false,
+      "description": "Frozen template entrypoint, not a shell command or resolved workspace cwd.",
+      "properties": {
+        "argv": {
+          "items": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Argv",
+          "type": "array"
+        },
+        "cwd_subpath": {
+          "$ref": "#/$defs/RepositoryRelativePath"
+        },
+        "env_refs": {
+          "additionalProperties": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Env Refs",
+          "type": "object"
+        },
+        "executable_id": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "executable_id",
+        "cwd_subpath"
+      ],
+      "title": "RunEntrypoint",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Frozen baseline or candidate run template without duplicate resource policy.",
+  "properties": {
+    "commit_sha": {
+      "$ref": "#/$defs/GitCommitSha"
+    },
+    "config_hash": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "display_name": {
+      "$ref": "#/$defs/HumanText"
+    },
+    "entrypoint": {
+      "$ref": "#/$defs/RunEntrypoint"
+    },
+    "environment_digest": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "patch_hash": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ContentHash"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "repository_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "template_id": {
+      "$ref": "#/$defs/OpaqueId"
+    }
+  },
+  "required": [
+    "schema_version",
+    "template_id",
+    "display_name",
+    "repository_id",
+    "commit_sha",
+    "entrypoint",
+    "environment_digest",
+    "config_hash"
+  ],
+  "title": "ModelRunTemplate",
+  "type": "object"
+}

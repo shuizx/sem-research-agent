@@ -1,0 +1,86 @@
+{
+  "$defs": {
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "FailureCategory": {
+      "pattern": "^[A-Z][A-Z0-9_]{0,63}$",
+      "type": "string"
+    },
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "JsonObject": {
+      "additionalProperties": {
+        "$ref": "#/$defs/vision_research_ops__domain__errors__JsonValue"
+      },
+      "type": "object"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "ReasonCode": {
+      "pattern": "^[A-Z0-9]+(?:_[A-Z0-9]+){2,}$",
+      "type": "string"
+    },
+    "StrictBoolean": {
+      "type": "boolean"
+    },
+    "pydantic__types__JsonValue": {},
+    "vision_research_ops__domain__errors__JsonValue": {
+      "$ref": "#/$defs/pydantic__types__JsonValue"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Stable de-sensitized failure summary retained with domain records.\n\n``category`` and ``message_hash`` remain internal-audit fields.  API layers\nproject only the stable user-facing subset defined in the interface contract.\nRaw exception details belong in de-sensitized logs or immutable artifacts.",
+  "properties": {
+    "category": {
+      "$ref": "#/$defs/FailureCategory"
+    },
+    "code": {
+      "$ref": "#/$defs/ReasonCode"
+    },
+    "correlation_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "details": {
+      "$ref": "#/$defs/JsonObject"
+    },
+    "message": {
+      "$ref": "#/$defs/HumanText"
+    },
+    "message_hash": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "retryable": {
+      "$ref": "#/$defs/StrictBoolean"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "code",
+    "category",
+    "message",
+    "message_hash",
+    "retryable"
+  ],
+  "title": "StructuredFailure",
+  "type": "object"
+}

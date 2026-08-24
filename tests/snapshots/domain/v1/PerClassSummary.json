@@ -1,0 +1,51 @@
+{
+  "$defs": {
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "UnitInterval": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "type": "number"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Bounded per-label performance summary.",
+  "properties": {
+    "f1": {
+      "$ref": "#/$defs/UnitInterval"
+    },
+    "label_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "precision": {
+      "$ref": "#/$defs/UnitInterval"
+    },
+    "recall": {
+      "$ref": "#/$defs/UnitInterval"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "support": {
+      "$ref": "#/$defs/NonNegativeInt"
+    }
+  },
+  "required": [
+    "schema_version",
+    "label_id",
+    "precision",
+    "recall",
+    "f1",
+    "support"
+  ],
+  "title": "PerClassSummary",
+  "type": "object"
+}

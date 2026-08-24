@@ -1,0 +1,28 @@
+{
+  "data": {
+    "group_split_key": "sample_id",
+    "group_split_strategy": "SAMPLE_STRATIFIED",
+    "label_mapping": {
+      "default_a": 0,
+      "default_b": 1,
+      "default_c": 2
+    }
+  },
+  "fixture_contract": "SEM_PLAIN_PYTORCH_CONFIG_V1",
+  "input": {
+    "channels": 3,
+    "modality": "RGB"
+  },
+  "metrics": {
+    "names": [
+      "accuracy"
+    ],
+    "output_file": "metrics.json"
+  },
+  "model": {
+    "num_classes": 3
+  },
+  "repair_revision": 0,
+  "revision": 0,
+  "schema_version": "1"
+}

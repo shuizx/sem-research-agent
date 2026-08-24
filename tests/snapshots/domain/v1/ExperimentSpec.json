@@ -1,0 +1,410 @@
+{
+  "$defs": {
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "FiniteFloat": {
+      "type": "number"
+    },
+    "GitCommitSha": {
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+      "type": "string"
+    },
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "MetricDefinition": {
+      "additionalProperties": false,
+      "description": "Definition of one reproducible evaluation metric.",
+      "properties": {
+        "aggregation": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "direction": {
+          "enum": [
+            "MAXIMIZE",
+            "MINIMIZE"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "implementation_version": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "minimum_practical_delta": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FiniteFloat"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "name": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "primary": {
+          "$ref": "#/$defs/StrictBoolean"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "name",
+        "direction",
+        "aggregation",
+        "implementation_version",
+        "primary"
+      ],
+      "title": "MetricDefinition",
+      "type": "object"
+    },
+    "ModelRunTemplate": {
+      "additionalProperties": false,
+      "description": "Frozen baseline or candidate run template without duplicate resource policy.",
+      "properties": {
+        "commit_sha": {
+          "$ref": "#/$defs/GitCommitSha"
+        },
+        "config_hash": {
+          "$ref": "#/$defs/ContentHash"
+        },
+        "display_name": {
+          "$ref": "#/$defs/HumanText"
+        },
+        "entrypoint": {
+          "$ref": "#/$defs/RunEntrypoint"
+        },
+        "environment_digest": {
+          "$ref": "#/$defs/ContentHash"
+        },
+        "patch_hash": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContentHash"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "repository_id": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "template_id": {
+          "$ref": "#/$defs/OpaqueId"
+        }
+      },
+      "required": [
+        "schema_version",
+        "template_id",
+        "display_name",
+        "repository_id",
+        "commit_sha",
+        "entrypoint",
+        "environment_digest",
+        "config_hash"
+      ],
+      "title": "ModelRunTemplate",
+      "type": "object"
+    },
+    "NetworkAllowlistRef": {
+      "pattern": "^netref_[a-z0-9][a-z0-9_-]{0,63}$",
+      "type": "string"
+    },
+    "NetworkPolicy": {
+      "description": "Network capability requested by a resource specification.",
+      "enum": [
+        "NONE",
+        "ALLOWLIST"
+      ],
+      "title": "NetworkPolicy",
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "PositiveFiniteFloat": {
+      "exclusiveMinimum": 0.0,
+      "type": "number"
+    },
+    "PositiveInt": {
+      "exclusiveMinimum": 0,
+      "type": "integer"
+    },
+    "RepositoryRelativePath": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "ResourceRequest": {
+      "additionalProperties": false,
+      "description": "Bounded compute and network capability requested for one run.",
+      "properties": {
+        "cpu_cores": {
+          "$ref": "#/$defs/PositiveFiniteFloat"
+        },
+        "gpu_count": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "gpu_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonBlankStr"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "memory_mb": {
+          "$ref": "#/$defs/PositiveInt"
+        },
+        "network_allowlist_refs": {
+          "items": {
+            "$ref": "#/$defs/NetworkAllowlistRef"
+          },
+          "title": "Network Allowlist Refs",
+          "type": "array"
+        },
+        "network_policy": {
+          "$ref": "#/$defs/NetworkPolicy"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scratch_mb": {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        "walltime_seconds": {
+          "$ref": "#/$defs/PositiveInt"
+        }
+      },
+      "required": [
+        "schema_version",
+        "cpu_cores",
+        "memory_mb",
+        "gpu_count",
+        "walltime_seconds",
+        "scratch_mb",
+        "network_policy"
+      ],
+      "title": "ResourceRequest",
+      "type": "object"
+    },
+    "RunEntrypoint": {
+      "additionalProperties": false,
+      "description": "Frozen template entrypoint, not a shell command or resolved workspace cwd.",
+      "properties": {
+        "argv": {
+          "items": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Argv",
+          "type": "array"
+        },
+        "cwd_subpath": {
+          "$ref": "#/$defs/RepositoryRelativePath"
+        },
+        "env_refs": {
+          "additionalProperties": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/NonBlankStr"
+          },
+          "title": "Env Refs",
+          "type": "object"
+        },
+        "executable_id": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "executable_id",
+        "cwd_subpath"
+      ],
+      "title": "RunEntrypoint",
+      "type": "object"
+    },
+    "StrictBoolean": {
+      "type": "boolean"
+    },
+    "TrainingBudget": {
+      "additionalProperties": false,
+      "description": "Hard run-budget limits shared by baseline and candidate execution.",
+      "properties": {
+        "max_epochs": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PositiveInt"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_steps": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PositiveInt"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_test_evaluations": {
+          "$ref": "#/$defs/PositiveInt"
+        },
+        "max_walltime_seconds": {
+          "$ref": "#/$defs/PositiveInt"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "max_walltime_seconds",
+        "max_test_evaluations"
+      ],
+      "title": "TrainingBudget",
+      "type": "object"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Frozen fair-comparison specification with a typed training budget.",
+  "properties": {
+    "approval_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "baseline_ref": {
+      "$ref": "#/$defs/ModelRunTemplate"
+    },
+    "candidate_ref": {
+      "$ref": "#/$defs/ModelRunTemplate"
+    },
+    "created_at": {
+      "$ref": "#/$defs/UTCDateTime"
+    },
+    "dataset_hash": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "dataset_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "dataset_version": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "environment_digest": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "experiment_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "metrics": {
+      "items": {
+        "$ref": "#/$defs/MetricDefinition"
+      },
+      "title": "Metrics",
+      "type": "array"
+    },
+    "preprocessing_hash": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "request_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "resources": {
+      "$ref": "#/$defs/ResourceRequest"
+    },
+    "revision": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seeds": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Seeds",
+      "type": "array"
+    },
+    "spec_hash": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "split_manifest_artifact_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "training_budget": {
+      "$ref": "#/$defs/TrainingBudget"
+    }
+  },
+  "required": [
+    "schema_version",
+    "experiment_id",
+    "revision",
+    "request_id",
+    "dataset_id",
+    "dataset_version",
+    "dataset_hash",
+    "baseline_ref",
+    "candidate_ref",
+    "seeds",
+    "split_manifest_artifact_id",
+    "preprocessing_hash",
+    "training_budget",
+    "metrics",
+    "resources",
+    "environment_digest",
+    "approval_id",
+    "spec_hash",
+    "created_at"
+  ],
+  "title": "ExperimentSpec",
+  "type": "object"
+}

@@ -1,0 +1,72 @@
+{
+  "$defs": {
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonRootJsonPointer": {
+      "minLength": 1,
+      "pattern": "^/(?:[^~/]|~[01])*(?:/(?:[^~/]|~[01])*)*$",
+      "type": "string"
+    },
+    "PatchOperationType": {
+      "description": "SEM Research Agent's structured edit operations (not a full RFC 6902 document).",
+      "enum": [
+        "ADD",
+        "REPLACE",
+        "REMOVE"
+      ],
+      "title": "PatchOperationType",
+      "type": "string"
+    },
+    "pydantic__types__JsonValue": {},
+    "vision_research_ops__domain__errors__JsonValue": {
+      "$ref": "#/$defs/pydantic__types__JsonValue"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A SEM Research Agent structured edit; null clearing must use ``REMOVE`` instead.",
+  "properties": {
+    "op": {
+      "$ref": "#/$defs/PatchOperationType"
+    },
+    "path": {
+      "$ref": "#/$defs/NonRootJsonPointer"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/HumanText"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "value": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/vision_research_ops__domain__errors__JsonValue"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "schema_version",
+    "op",
+    "path"
+  ],
+  "title": "PatchOperation",
+  "type": "object"
+}

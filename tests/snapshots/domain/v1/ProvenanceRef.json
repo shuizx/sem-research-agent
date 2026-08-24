@@ -1,0 +1,86 @@
+{
+  "$defs": {
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Provenance for a retrieved or generated domain record.",
+  "properties": {
+    "content_hash": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ContentHash"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "evidence_artifact_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "retrieved_at": {
+      "$ref": "#/$defs/UTCDateTime"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_id": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "source_type": {
+      "enum": [
+        "provider",
+        "api",
+        "user",
+        "generated"
+      ],
+      "title": "Source Type",
+      "type": "string"
+    },
+    "source_url": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "schema_version",
+    "source_type",
+    "source_id",
+    "retrieved_at"
+  ],
+  "title": "ProvenanceRef",
+  "type": "object"
+}

@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "GitCommitSha": {
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "PositiveInt": {
+      "exclusiveMinimum": 0,
+      "type": "integer"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Concrete patch attempt against a fixed complete base commit SHA.",
+  "properties": {
+    "attempt_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "attempt_number": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "base_commit_sha": {
+      "$ref": "#/$defs/GitCommitSha"
+    },
+    "created_at": {
+      "$ref": "#/$defs/UTCDateTime"
+    },
+    "operation_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "patch_artifact_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "patch_hash": {
+      "$ref": "#/$defs/ContentHash"
+    },
+    "plan_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "plan_revision": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "GENERATED",
+        "VALIDATING",
+        "PASSED",
+        "FAILED"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "workspace_ref": {
+      "$ref": "#/$defs/NonBlankStr"
+    }
+  },
+  "required": [
+    "schema_version",
+    "attempt_id",
+    "plan_id",
+    "plan_revision",
+    "attempt_number",
+    "workspace_ref",
+    "patch_artifact_id",
+    "patch_hash",
+    "base_commit_sha",
+    "operation_id",
+    "status",
+    "created_at"
+  ],
+  "title": "AdaptationAttempt",
+  "type": "object"
+}

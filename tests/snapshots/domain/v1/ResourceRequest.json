@@ -1,0 +1,89 @@
+{
+  "$defs": {
+    "NetworkAllowlistRef": {
+      "pattern": "^netref_[a-z0-9][a-z0-9_-]{0,63}$",
+      "type": "string"
+    },
+    "NetworkPolicy": {
+      "description": "Network capability requested by a resource specification.",
+      "enum": [
+        "NONE",
+        "ALLOWLIST"
+      ],
+      "title": "NetworkPolicy",
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "PositiveFiniteFloat": {
+      "exclusiveMinimum": 0.0,
+      "type": "number"
+    },
+    "PositiveInt": {
+      "exclusiveMinimum": 0,
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Bounded compute and network capability requested for one run.",
+  "properties": {
+    "cpu_cores": {
+      "$ref": "#/$defs/PositiveFiniteFloat"
+    },
+    "gpu_count": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "gpu_type": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "memory_mb": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "network_allowlist_refs": {
+      "items": {
+        "$ref": "#/$defs/NetworkAllowlistRef"
+      },
+      "title": "Network Allowlist Refs",
+      "type": "array"
+    },
+    "network_policy": {
+      "$ref": "#/$defs/NetworkPolicy"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scratch_mb": {
+      "$ref": "#/$defs/NonNegativeInt"
+    },
+    "walltime_seconds": {
+      "$ref": "#/$defs/PositiveInt"
+    }
+  },
+  "required": [
+    "schema_version",
+    "cpu_cores",
+    "memory_mb",
+    "gpu_count",
+    "walltime_seconds",
+    "scratch_mb",
+    "network_policy"
+  ],
+  "title": "ResourceRequest",
+  "type": "object"
+}

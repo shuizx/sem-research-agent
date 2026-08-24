@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "OpenUnitInterval": {
+      "exclusiveMaximum": 1.0,
+      "exclusiveMinimum": 0.0,
+      "type": "number"
+    },
+    "SplitStrategy": {
+      "description": "Supported deterministic split-policy families.",
+      "enum": [
+        "TIME_EXTRAPOLATION",
+        "GROUP_HOLDOUT",
+        "DOMAIN_HOLDOUT",
+        "SAMPLE_STRATIFIED"
+      ],
+      "title": "SplitStrategy",
+      "type": "string"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Declarative split contract; generation remains a later adaptation responsibility.",
+  "properties": {
+    "group_keys": {
+      "items": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "title": "Group Keys",
+      "type": "array"
+    },
+    "holdout_values": {
+      "additionalProperties": {
+        "items": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "type": "array"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "title": "Holdout Values",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NonNegativeInt"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "strategy": {
+      "$ref": "#/$defs/SplitStrategy"
+    },
+    "test_fraction": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpenUnitInterval"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "time_cutoff": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UTCDateTime"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "time_key": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "validation_fraction": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpenUnitInterval"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "schema_version",
+    "strategy"
+  ],
+  "title": "SplitPolicy",
+  "type": "object"
+}

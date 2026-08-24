@@ -1,0 +1,264 @@
+{
+  "$defs": {
+    "EvaluationConclusion": {
+      "description": "Deterministic conclusion of an evaluation report.",
+      "enum": [
+        "IMPROVED",
+        "NO_CLEAR_IMPROVEMENT",
+        "REGRESSED",
+        "INVALID"
+      ],
+      "title": "EvaluationConclusion",
+      "type": "string"
+    },
+    "FiniteFloat": {
+      "type": "number"
+    },
+    "JsonObject": {
+      "additionalProperties": {
+        "$ref": "#/$defs/vision_research_ops__domain__errors__JsonValue"
+      },
+      "type": "object"
+    },
+    "MetricSummary": {
+      "additionalProperties": false,
+      "description": "Finite aggregate metric summary across comparable runs.",
+      "properties": {
+        "ci_lower": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FiniteFloat"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ci_upper": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FiniteFloat"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "delta_mean": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FiniteFloat"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mean": {
+          "$ref": "#/$defs/FiniteFloat"
+        },
+        "metric_name": {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "spread": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeFiniteFloat"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "schema_version",
+        "metric_name",
+        "mean"
+      ],
+      "title": "MetricSummary",
+      "type": "object"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeFiniteFloat": {
+      "minimum": 0.0,
+      "type": "number"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "PerClassSummary": {
+      "additionalProperties": false,
+      "description": "Bounded per-label performance summary.",
+      "properties": {
+        "f1": {
+          "$ref": "#/$defs/UnitInterval"
+        },
+        "label_id": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "precision": {
+          "$ref": "#/$defs/UnitInterval"
+        },
+        "recall": {
+          "$ref": "#/$defs/UnitInterval"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "support": {
+          "$ref": "#/$defs/NonNegativeInt"
+        }
+      },
+      "required": [
+        "schema_version",
+        "label_id",
+        "precision",
+        "recall",
+        "f1",
+        "support"
+      ],
+      "title": "PerClassSummary",
+      "type": "object"
+    },
+    "ReasonCode": {
+      "pattern": "^[A-Z0-9]+(?:_[A-Z0-9]+){2,}$",
+      "type": "string"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "UnitInterval": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "type": "number"
+    },
+    "pydantic__types__JsonValue": {},
+    "vision_research_ops__domain__errors__JsonValue": {
+      "$ref": "#/$defs/pydantic__types__JsonValue"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Machine-readable evaluation outcome with validity and evidence invariants.",
+  "properties": {
+    "baseline_run_ids": {
+      "items": {
+        "$ref": "#/$defs/OpaqueId"
+      },
+      "title": "Baseline Run Ids",
+      "type": "array"
+    },
+    "candidate_run_ids": {
+      "items": {
+        "$ref": "#/$defs/OpaqueId"
+      },
+      "title": "Candidate Run Ids",
+      "type": "array"
+    },
+    "conclusion": {
+      "$ref": "#/$defs/EvaluationConclusion"
+    },
+    "conclusion_reasons": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Conclusion Reasons",
+      "type": "array"
+    },
+    "created_at": {
+      "$ref": "#/$defs/UTCDateTime"
+    },
+    "evaluation_artifact_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "evaluator_version": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "experiment_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "invalidity_reasons": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Invalidity Reasons",
+      "type": "array"
+    },
+    "metric_summaries": {
+      "items": {
+        "$ref": "#/$defs/MetricSummary"
+      },
+      "title": "Metric Summaries",
+      "type": "array"
+    },
+    "narrative_artifact_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "per_class_summaries": {
+      "items": {
+        "$ref": "#/$defs/PerClassSummary"
+      },
+      "title": "Per Class Summaries",
+      "type": "array"
+    },
+    "report_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "resource_summary": {
+      "$ref": "#/$defs/JsonObject"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "validity": {
+      "enum": [
+        "VALID",
+        "INVALID"
+      ],
+      "title": "Validity",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "report_id",
+    "experiment_id",
+    "validity",
+    "conclusion",
+    "evaluation_artifact_id",
+    "evaluator_version",
+    "created_at"
+  ],
+  "title": "EvaluationReport",
+  "type": "object"
+}

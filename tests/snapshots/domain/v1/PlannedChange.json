@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One planned repository file change.",
+  "properties": {
+    "action": {
+      "enum": [
+        "CREATE",
+        "MODIFY",
+        "DELETE"
+      ],
+      "title": "Action",
+      "type": "string"
+    },
+    "change_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "path": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/HumanText"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "change_id",
+    "path",
+    "action"
+  ],
+  "title": "PlannedChange",
+  "type": "object"
+}

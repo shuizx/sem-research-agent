@@ -1,0 +1,84 @@
+[project]
+name = "sem-research-agent"
+version = "0.1.0"
+description = "Human-gated LangGraph workflows for SEM research, code adaptation, and deterministic evaluation."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "shuizx" }]
+keywords = ["langgraph", "computer-vision", "research-reproduction", "evaluation"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "httpx>=0.28.1,<1.0.0",
+    "langchain-openai>=1.3.2,<2.0.0",
+    "langgraph>=1.2.10,<2.0.0",
+    "pydantic>=2.13.4,<3.0.0",
+    "python-dotenv>=1.1.1,<2.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "coverage[toml]>=7.15.4,<8.0.0",
+    "hypothesis>=6.165.2,<7.0.0",
+    "mypy>=2.3.0,<3.0.0",
+    "pytest>=9.1.1,<10.0.0",
+    "pytest-asyncio>=1.4.0,<2.0.0",
+    "ruff>=0.16.1,<1.0.0",
+]
+
+[build-system]
+requires = ["hatchling>=1.31.0,<2.0.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vision_research_ops"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+markers = [
+    "unit: Pure unit tests; no external services (default).",
+    "contract: Port/adapter contract tests shared across implementations.",
+    "graph: LangGraph workflow graph tests with in-memory checkpointer.",
+    "integration: Controlled integration tests using local fakes and fixture servers.",
+    "e2e: Offline end-to-end acceptance tests.",
+    "security: Security and sandbox policy tests.",
+    "external: Require live external API or public network access; skipped by default.",
+    "gpu: Require a CUDA-capable GPU; skipped by default.",
+    "slurm: Require a Slurm cluster; skipped by default.",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["vision_research_ops"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "@overload",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]

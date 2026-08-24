@@ -1,0 +1,8 @@
+{
+  "class_count": 4,
+  "feature_mode": "GRID4",
+  "learning_rate": 0.15,
+  "method": "GRID4_LINEAR_PATCHED",
+  "schema_version": "1",
+  "weight_decay": 0.0
+}

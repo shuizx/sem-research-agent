@@ -1,0 +1,37 @@
+{
+  "dataset_id": "dataset-synthetic-sem-1",
+  "group_key": "wafer_group",
+  "group_overlap": false,
+  "schema_version": "1",
+  "split_kind": "FIXED_GROUP_HOLDOUT",
+  "test": [
+    "syn-018",
+    "syn-019",
+    "syn-020",
+    "syn-021",
+    "syn-022",
+    "syn-023"
+  ],
+  "train": [
+    "syn-000",
+    "syn-001",
+    "syn-002",
+    "syn-003",
+    "syn-004",
+    "syn-005",
+    "syn-006",
+    "syn-007",
+    "syn-008",
+    "syn-009",
+    "syn-010",
+    "syn-011"
+  ],
+  "validation": [
+    "syn-012",
+    "syn-013",
+    "syn-014",
+    "syn-015",
+    "syn-016",
+    "syn-017"
+  ]
+}

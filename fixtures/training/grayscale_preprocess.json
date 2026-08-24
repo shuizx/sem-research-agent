@@ -1,0 +1,6 @@
+{
+  "channels": 1,
+  "decode": "SYNTHETIC_RECIPE_TO_8X8_GRAYSCALE",
+  "normalization": "UNIT_INTERVAL",
+  "schema_version": "1"
+}

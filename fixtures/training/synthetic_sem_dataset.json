@@ -1,0 +1,44 @@
+{
+  "dataset_id": "dataset-synthetic-sem-1",
+  "dataset_version": "synthetic-sem-v1",
+  "fixture_kind": "SYNTHETIC_SEM_IMAGE_RECIPE",
+  "generator": {
+    "height": 8,
+    "noise_amplitude": 10,
+    "width": 8
+  },
+  "labels": [
+    "bridge",
+    "particle",
+    "scratch",
+    "void"
+  ],
+  "samples": [
+    {"group_id": "wafer-000", "label": 0, "noise_seed": 101, "sample_id": "syn-000"},
+    {"group_id": "wafer-001", "label": 1, "noise_seed": 102, "sample_id": "syn-001"},
+    {"group_id": "wafer-002", "label": 2, "noise_seed": 103, "sample_id": "syn-002"},
+    {"group_id": "wafer-003", "label": 3, "noise_seed": 104, "sample_id": "syn-003"},
+    {"group_id": "wafer-004", "label": 0, "noise_seed": 105, "sample_id": "syn-004"},
+    {"group_id": "wafer-005", "label": 1, "noise_seed": 106, "sample_id": "syn-005"},
+    {"group_id": "wafer-006", "label": 2, "noise_seed": 107, "sample_id": "syn-006"},
+    {"group_id": "wafer-007", "label": 3, "noise_seed": 108, "sample_id": "syn-007"},
+    {"group_id": "wafer-008", "label": 0, "noise_seed": 109, "sample_id": "syn-008"},
+    {"group_id": "wafer-009", "label": 1, "noise_seed": 110, "sample_id": "syn-009"},
+    {"group_id": "wafer-010", "label": 2, "noise_seed": 111, "sample_id": "syn-010"},
+    {"group_id": "wafer-011", "label": 3, "noise_seed": 112, "sample_id": "syn-011"},
+    {"group_id": "wafer-012", "label": 0, "noise_seed": 113, "sample_id": "syn-012"},
+    {"group_id": "wafer-013", "label": 1, "noise_seed": 114, "sample_id": "syn-013"},
+    {"group_id": "wafer-014", "label": 2, "noise_seed": 115, "sample_id": "syn-014"},
+    {"group_id": "wafer-015", "label": 3, "noise_seed": 116, "sample_id": "syn-015"},
+    {"group_id": "wafer-016", "label": 0, "noise_seed": 117, "sample_id": "syn-016"},
+    {"group_id": "wafer-017", "label": 1, "noise_seed": 118, "sample_id": "syn-017"},
+    {"group_id": "wafer-018", "label": 2, "noise_seed": 119, "sample_id": "syn-018"},
+    {"group_id": "wafer-019", "label": 3, "noise_seed": 120, "sample_id": "syn-019"},
+    {"group_id": "wafer-020", "label": 0, "noise_seed": 121, "sample_id": "syn-020"},
+    {"group_id": "wafer-021", "label": 1, "noise_seed": 122, "sample_id": "syn-021"},
+    {"group_id": "wafer-022", "label": 2, "noise_seed": 123, "sample_id": "syn-022"},
+    {"group_id": "wafer-023", "label": 3, "noise_seed": 124, "sample_id": "syn-023"}
+  ],
+  "schema_version": "1",
+  "synthetic_data_labeled": true
+}

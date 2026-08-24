@@ -1,0 +1,51 @@
+{
+  "$defs": {
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "RepositoryRelativePath": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Frozen template entrypoint, not a shell command or resolved workspace cwd.",
+  "properties": {
+    "argv": {
+      "items": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "title": "Argv",
+      "type": "array"
+    },
+    "cwd_subpath": {
+      "$ref": "#/$defs/RepositoryRelativePath"
+    },
+    "env_refs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/NonBlankStr"
+      },
+      "title": "Env Refs",
+      "type": "object"
+    },
+    "executable_id": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "executable_id",
+    "cwd_subpath"
+  ],
+  "title": "RunEntrypoint",
+  "type": "object"
+}

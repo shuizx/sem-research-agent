@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "ReasonCode": {
+      "pattern": "^[A-Z0-9]+(?:_[A-Z0-9]+){2,}$",
+      "type": "string"
+    },
+    "SeverityLevel": {
+      "description": "Unified severity vocabulary for labels, gaps, and findings.",
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "SeverityLevel",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One static-analysis finding; it does not itself authorize an action.",
+  "properties": {
+    "category": {
+      "$ref": "#/$defs/ReasonCode"
+    },
+    "description": {
+      "$ref": "#/$defs/HumanText"
+    },
+    "finding_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "location_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "rule_id": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "severity": {
+      "$ref": "#/$defs/SeverityLevel"
+    }
+  },
+  "required": [
+    "schema_version",
+    "finding_id",
+    "rule_id",
+    "category",
+    "severity",
+    "description"
+  ],
+  "title": "RiskFinding",
+  "type": "object"
+}

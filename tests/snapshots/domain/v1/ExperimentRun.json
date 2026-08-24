@@ -1,0 +1,304 @@
+{
+  "$defs": {
+    "ContentHash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "FailureCategory": {
+      "pattern": "^[A-Z][A-Z0-9_]{0,63}$",
+      "type": "string"
+    },
+    "HumanText": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "type": "string"
+    },
+    "JsonObject": {
+      "additionalProperties": {
+        "$ref": "#/$defs/vision_research_ops__domain__errors__JsonValue"
+      },
+      "type": "object"
+    },
+    "NonBlankStr": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "NonNegativeInt": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "OpaqueId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "PositiveInt": {
+      "exclusiveMinimum": 0,
+      "type": "integer"
+    },
+    "ReasonCode": {
+      "pattern": "^[A-Z0-9]+(?:_[A-Z0-9]+){2,}$",
+      "type": "string"
+    },
+    "RunStatus": {
+      "description": "Lifecycle status of an experiment run.",
+      "enum": [
+        "CREATED",
+        "SUBMITTING",
+        "QUEUED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCEL_REQUESTED",
+        "CANCELLED",
+        "TIMED_OUT",
+        "LOST",
+        "INVALID"
+      ],
+      "title": "RunStatus",
+      "type": "string"
+    },
+    "StrictBoolean": {
+      "type": "boolean"
+    },
+    "StructuredFailure": {
+      "additionalProperties": false,
+      "description": "Stable de-sensitized failure summary retained with domain records.\n\n``category`` and ``message_hash`` remain internal-audit fields.  API layers\nproject only the stable user-facing subset defined in the interface contract.\nRaw exception details belong in de-sensitized logs or immutable artifacts.",
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/FailureCategory"
+        },
+        "code": {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        "correlation_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "details": {
+          "$ref": "#/$defs/JsonObject"
+        },
+        "message": {
+          "$ref": "#/$defs/HumanText"
+        },
+        "message_hash": {
+          "$ref": "#/$defs/ContentHash"
+        },
+        "retryable": {
+          "$ref": "#/$defs/StrictBoolean"
+        },
+        "schema_version": {
+          "const": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "code",
+        "category",
+        "message",
+        "message_hash",
+        "retryable"
+      ],
+      "title": "StructuredFailure",
+      "type": "object"
+    },
+    "UTCDateTime": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "pydantic__types__JsonValue": {},
+    "vision_research_ops__domain__errors__JsonValue": {
+      "$ref": "#/$defs/pydantic__types__JsonValue"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Execution lifecycle record with explicit terminal-state invariants.",
+  "properties": {
+    "attempt": {
+      "$ref": "#/$defs/NonNegativeInt",
+      "default": 0
+    },
+    "executor": {
+      "enum": [
+        "LOCAL",
+        "SLURM"
+      ],
+      "title": "Executor",
+      "type": "string"
+    },
+    "experiment_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "external_job_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "failure": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StructuredFailure"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UTCDateTime"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "idempotency_key": {
+      "$ref": "#/$defs/NonBlankStr"
+    },
+    "log_artifact_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "manifest_artifact_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "metrics_artifact_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "mlflow_run_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NonBlankStr"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "model_artifact_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "predictions_artifact_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "revision": {
+      "$ref": "#/$defs/PositiveInt"
+    },
+    "role": {
+      "enum": [
+        "BASELINE",
+        "CANDIDATE"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "run_id": {
+      "$ref": "#/$defs/OpaqueId"
+    },
+    "schema_version": {
+      "const": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "started_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UTCDateTime"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "status": {
+      "$ref": "#/$defs/RunStatus"
+    },
+    "submitted_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UTCDateTime"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "schema_version",
+    "run_id",
+    "experiment_id",
+    "role",
+    "seed",
+    "status",
+    "idempotency_key",
+    "executor",
+    "revision"
+  ],
+  "title": "ExperimentRun",
+  "type": "object"
+}
