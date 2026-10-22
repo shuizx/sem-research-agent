@@ -15,6 +15,7 @@ three tasks. Only one implementation task may be active at a time.
 | P6-T13 Profile and context integration | DONE | Reviewed `d3dd8b3`; C1–C7 PASS |
 | P6-T14 Explicit provider configuration | DONE | `2684829`; D1–D5 offline PASS |
 | P6-T15 Bounded conversation live repair | DONE | `d24a820`; two review findings closed; separate Code advice failure recorded |
+| P6-T16 Bounded Code advice correction | IN_PROGRESS | `c45260c`; fixed K1–K6 below |
 
 The original three tasks completed independent fixed-matrix reviews and local integration.
 P6-T15 closes the URL and Supervisor defects after one review and one bounded repair, with
@@ -22,6 +23,7 @@ P6-T15 closes the URL and Supervisor defects after one review and one bounded re
 retrieval and repository approval routing passed; Code advice submission exposed a separate
 oversized-list validation failure. That failure is not hidden by the P6-T15 completion status;
 see its handoff before starting the separately scoped follow-up. Remote publication is separate.
+P6-T16 is now the sole implementation task, using the observed Code list-length failure as input.
 
 ## Shared decisions
 
@@ -240,3 +242,57 @@ the abstract SEM target, not user dataset configuration. Live diagnosis has at m
 post-repair verification is one bounded group, retains the per-request 24-call budget, and records
 application-call versus SDK-retry counts honestly. A slow Code check may run up to six minutes;
 do not turn the earlier two-minute diagnostic limit into a product acceptance requirement.
+
+## P6-T16: Bounded Code advice correction
+
+Authorized follow-up under the user's repair/development delegation; base
+`c45260c5c0f8cbecd22c1941918ec4ccef8dc972`. Use GPT-6 Astra / xhigh, serial implementation,
+one independent fixed-matrix review and at most one bounded repair. No architecture expansion.
+
+Input: the newly approved live Code attempt reached `submit_adaptation_advice` after reading
+six approved files, then failed validation with `advice.risks:too_long` and
+`advice.items_to_verify:too_long` (existing maximum six each). Output: explicit prompt limits and
+at most one sanitized final-advice length correction inside the existing ToolNode loop.
+Do not truncate/discard model fields to manufacture success, weaken the schema, or increase limits.
+
+Owned paths: `application/services/repository_insight_planner.py`, the existing
+`prompts/repository_insight/` prompt, direct `tests/repository_insight/` tests and
+`docs/handoffs/P6-T16.md`. Coordinator permits only a backward-compatible prompt-version update
+in `application/services/repository_insight_models.py` if the prompt version changes; all advice
+fields/constraints remain unchanged. README/this plan/parent coordination docs remain shared.
+Do not change domain/ports, dependencies/lock, CI, Settings/transport, real dotenv, other workflows,
+user context, source files in the approved snapshot, or add a general retry framework.
+
+Fixed acceptance K1–K6:
+
+1. K1: valid first submissions keep the actual four-tool Code path and typed output, with no
+   unconditional extra call. Prompt explicitly describes the existing collection limits and
+   asks for concise non-executable advice; stored prompt provenance stays accurate.
+2. K2: an ordinary oversized final-advice list can yield one allowlisted schema-length feedback
+   observation to the same model/tool schema, followed by one corrected submission. Feedback
+   contains only declared field names, stable error types and schema limits, no original values,
+   raw errors/model responses or source/prompt transcripts. No free-text JSON recovery or truncation.
+3. K3: at most one correction per Code run, inside unchanged 10 model-turn / 10 tool-call,
+   six-file / 48 KiB and shared 24-model-call limits. Count the correction before invocation.
+   Exhaustion remains explicit; no second Gate, repository fetch or repeated source read is
+   required just to correct final advice. Provider/auth/timeout and policy/path/execution errors
+   are not treated as correctable list-length errors.
+4. K4: repeated invalid output or a non-correctable failure cannot create a successful result,
+   artifact or working context. Final accepted advice still passes all current schema, safety
+   and actual-read-path validation. Human Gate and no-execution boundaries remain unchanged.
+5. K5: direct ordinary tests cover first-valid, oversized-to-valid, repeated invalid, unchanged
+   budgets and non-correctable errors; affected/full offline suites, Ruff/mypy and protected Git
+   diffs pass. No pressure/fuzz, new dependency, provider switch or infrastructure.
+6. K6: truthful handoff and one independent review. After freezing source, one bounded live
+   planner check may reuse only the already approved fixed cached snapshot and real current model
+   with abstract target/isolated artifacts. At most 20 model HTTP sends, existing application
+   budgets and a six-minute diagnostic deadline; public metadata only if needed. No new download,
+   human-approval replay, full-workflow success claim, or retry-until-pass. Record actual result,
+   correction/budget counts and limits; a valid first attempt does not prove live correction.
+
+Verification uses the established dev interpreter/public PYTHONPATH and isolated offline settings,
+temporary test/cache directories, affected and full offline pytest, Ruff format/lint and strict
+mypy. Lock already passed unchanged under P6-T15; verify no dependency diff rather than reinstall.
+External effects: authorized SHU/public metadata checks, read-only approved cached source, ignored
+artifacts, local commits and reviewed fast-forward integration only. No push/tag, raw images,
+third-party execution, patch/smoke/training or changes to the real API configuration.
