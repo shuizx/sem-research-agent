@@ -28,6 +28,10 @@ var/
 mlruns/
 mlflow.db
 
+# Local planning and working notes
+/docs/agent-evolution.md
+/docs/handoffs/
+
 # Secrets
 .env
 .env.*

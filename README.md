@@ -87,7 +87,7 @@ VRO_LLM_MODEL=qwen-plus
 VRO_DATASET_ROOT=
 ```
 
-For the user-selected SHU gateway, use these settings in your local `.env` instead:
+For the SHU OpenAI-compatible gateway, use these settings in your local `.env` instead:
 
 ```dotenv
 VRO_LLM_BASE_URL=https://claw.shu.edu.cn/api/v1
@@ -108,8 +108,8 @@ check using the exact model ID above verified authentication, Supervisor routing
 and research retrieval. A separate Code check against previously approved, fixed-commit cached
 source read six files and produced validated adaptation advice after one sanitized list-length
 correction, within the unchanged ten-call budget. This verifies the Code planner, not a new full
-approval/download workflow. See [P6-T15 evidence](docs/handoffs/P6-T15.md) and
-[P6-T16 correction evidence](docs/handoffs/P6-T16.md). Supervisor schema failures and the Code
+approval/download workflow. See [validation results and limits](docs/validation.md).
+Supervisor schema failures and the Code
 planner's declared final-list length failures each permit at most one bounded correction.
 Provider errors remain explicit; there is no automatic retry against a different gateway/model
 and no unstructured-output fallback.

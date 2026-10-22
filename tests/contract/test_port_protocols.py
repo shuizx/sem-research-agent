@@ -180,7 +180,7 @@ def test_automatic_method_discovery_rejects_a_protocol_method_missing_from_its_f
 
 @pytest.mark.contract
 def test_registry_rejects_an_unregistered_new_public_protocol() -> None:
-    """A coordinator must register every future exported concrete port before tests can pass."""
+    """Every exported concrete port requires a registered contract-test implementation."""
 
     class FuturePort(Protocol):
         async def future(self, *, ctx: object) -> str:
@@ -196,7 +196,7 @@ def test_registry_rejects_an_unregistered_new_public_protocol() -> None:
 
 @pytest.mark.contract
 def test_capability_mechanism_is_not_a_public_port_requirement() -> None:
-    """Coordinator decision CD-P0T03-01 keeps test support flags out of public Protocols."""
+    """Test support flags remain internal to fakes, outside public Protocol contracts."""
     assert "CapabilityAware" not in ports.__all__
     assert "CapabilityDeclaration" not in ports.__all__
     assert "PortCapability" not in ports.__all__
@@ -219,7 +219,7 @@ def test_capability_mechanism_is_not_a_public_port_requirement() -> None:
 
 @pytest.mark.contract
 def test_operation_repository_remains_deferred_and_non_runtime_checkable() -> None:
-    """Coordinator decision CD-P0T03-02 forbids an empty runtime Protocol pseudo-check."""
+    """An empty Protocol cannot establish runtime conformance."""
     assert OperationRepository._is_runtime_protocol is False
     with pytest.raises(TypeError):
         isinstance(object(), OperationRepository)

@@ -1,4 +1,4 @@
-"""P6-T14 configuration wiring and secret boundaries, with no live credentials or requests."""
+"""Provider configuration wiring and secret boundaries without live credentials or requests."""
 
 from __future__ import annotations
 
