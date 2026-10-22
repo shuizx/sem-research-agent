@@ -105,11 +105,14 @@ not local file access or encryption. Do not paste keys into chats, screenshots o
 Configuration support is not a live capability guarantee: this gateway/model must support
 OpenAI-compatible Chat Completions, function/tool calls and schema-bound output. A bounded SHU
 check using the exact model ID above verified authentication, Supervisor routing, paper analysis,
-and research retrieval. Code reading reached final submission, but oversized advice lists failed
-validation; complete successful Code advice is not yet verified for this configuration. See
-[P6-T15 evidence](docs/handoffs/P6-T15.md). Supervisor schema failures permit one sanitized
-correction within the existing call budget. Provider errors remain explicit; there is no automatic
-retry against a different gateway/model and no unstructured-output fallback.
+and research retrieval. A separate Code check against previously approved, fixed-commit cached
+source read six files and produced validated adaptation advice after one sanitized list-length
+correction, within the unchanged ten-call budget. This verifies the Code planner, not a new full
+approval/download workflow. See [P6-T15 evidence](docs/handoffs/P6-T15.md) and
+[P6-T16 correction evidence](docs/handoffs/P6-T16.md). Supervisor schema failures and the Code
+planner's declared final-list length failures each permit at most one bounded correction.
+Provider errors remain explicit; there is no automatic retry against a different gateway/model
+and no unstructured-output fallback.
 Legacy code/CLI names such as `dashscope` and `DASHSCOPE_TOOL_CALLING` identify the existing adapter
 path, not a vendor claim; recorded provider IDs are `openai-compatible` for custom endpoints.
 

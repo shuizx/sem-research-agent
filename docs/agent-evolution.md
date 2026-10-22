@@ -15,15 +15,17 @@ three tasks. Only one implementation task may be active at a time.
 | P6-T13 Profile and context integration | DONE | Reviewed `d3dd8b3`; C1–C7 PASS |
 | P6-T14 Explicit provider configuration | DONE | `2684829`; D1–D5 offline PASS |
 | P6-T15 Bounded conversation live repair | DONE | `d24a820`; two review findings closed; separate Code advice failure recorded |
-| P6-T16 Bounded Code advice correction | IN_PROGRESS | `c45260c`; fixed K1–K6 below |
+| P6-T16 Bounded Code advice correction | DONE | Reviewed `138c13f`; K1–K6 PASS; actual cached-source live correction succeeded |
 
 The original three tasks completed independent fixed-matrix reviews and local integration.
 P6-T15 closes the URL and Supervisor defects after one review and one bounded repair, with
 783 offline tests passing and one existing Windows symlink skip. Real paper analysis, research
 retrieval and repository approval routing passed; Code advice submission exposed a separate
-oversized-list validation failure. That failure is not hidden by the P6-T15 completion status;
-see its handoff before starting the separately scoped follow-up. Remote publication is separate.
-P6-T16 is now the sole implementation task, using the observed Code list-length failure as input.
+oversized-list validation failure. That failed evidence remains in the P6-T15 handoff. P6-T16
+repairs this boundary without relaxing schemas or budgets: independent K1–K6 review accepted,
+797 offline tests passed with one existing skip, and one real cached-source Code planner check
+completed after the permitted correction. This was not a new full approval/download workflow.
+No further implementation task is READY in this plan. Remote publication is separate.
 
 ## Shared decisions
 
