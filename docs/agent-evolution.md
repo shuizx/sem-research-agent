@@ -13,9 +13,12 @@ three tasks. Only one implementation task may be active at a time.
 | P6-T11 Supervisor and delegation | DONE | Reviewed `1e113ad`; A1–A8 PASS |
 | P6-T12 Research tool loop | DONE | Reviewed `754f05d`; B1–B7 PASS |
 | P6-T13 Profile and context integration | DONE | Reviewed `d3dd8b3`; C1–C7 PASS |
+| P6-T14 Explicit provider configuration | DONE | `2684829`; D1–D5 offline PASS |
+| P6-T15 Bounded conversation live repair | IN_PROGRESS | `2684829`; fixed F1–F7 below |
 
 All three tasks have completed their independent fixed-matrix reviews and local integration.
-No further implementation task is ready under this plan. Remote publication is separate.
+P6-T15 is the sole active implementation task after the user's subsequent live-verification
+and repair authorization. Remote publication is separate.
 The final offline suite passed 746 tests with one existing Windows symlink skip. Authorized
 live attempts produced mixed results; complete final live paper-to-Code execution and provider
 stability are not claimed as verified. See the P6-T13 handoff for exact evidence and limits.
@@ -169,3 +172,71 @@ one bounded repair. Complete and integrate it locally before the next task. Reco
 checks and unrun live checks in the handoff; never substitute test totals for functional evidence.
 Local branches/commits and fast-forward integration are part of delivery. Publishing to a remote
 repository is separate from these acceptance gates.
+
+## P6-T15: Bounded conversation live repair
+
+Authorized 2026-10-22; implementation baseline `26848297ca21886c58cb19bfc351daa4fd1ef269`.
+Use GPT-6 Astra / xhigh for the serial implementer and independent reviewer. One review and at
+most one bounded repair; no new architecture or production hardening task.
+
+Inputs: ordinary Chinese input containing an arXiv URL followed immediately by punctuation/text;
+observed HTTP-200 `SUPERVISOR_SCHEMA_FAILED` results; existing strict supervisor contracts; the
+currently configured SHU model; public paper evidence and the previously authorized read-only
+`kuangliu/pytorch-cifar` snapshot at `49b7aa97b0c12fe0d4054e670403a16b6b834ddd`.
+The previous Code diagnostic deadline is not evidence of a product timeout defect.
+Outputs: minimal repair, focused ordinary regressions, safe failure evidence and a truthful handoff.
+
+Owned implementation paths: `application/services/conversation_intent.py`,
+`adapters/llm/supervisor.py`, narrowly necessary `application/services/supervisor_models.py`,
+`application/workflows/supervisor.py`, `cli/conversation.py`, directly related tests under
+`tests/conversation/` and `tests/supervisor/`, and `docs/handoffs/P6-T15.md`. Diagnostic scripts
+and generated evidence belong in a new ignored `var/validation/p6-t15-*` directory.
+Coordinator owns README, this plan and parent coordination docs. Changes to shared LLM transport,
+Research/Code planner or another path require a concrete observed need and coordinator approval.
+Domain/ports, dependencies/lock, CI and actual `.env` are protected. No training/image access.
+
+Fixed acceptance F1–F7:
+
+1. F1: ordinary arXiv/GitHub URLs next to Chinese punctuation or explanatory text resolve to the
+   intended canonical target. Existing multiple-target ambiguity, canonical-host/path checks and
+   plain commands remain intact. Invalid ordinary inputs return a safe response, not an uncaught
+   Pydantic exception or a raw input stuffed into a constrained target field.
+2. F2: diagnose Supervisor parsing/response-shape failure using only safe categories, known field
+   locations/types and tool-presence metadata. Repair the actual bounded structured-proposal path;
+   preserve the closed action schema, no free-text JSON extraction, no invented success/action,
+   and no switch to a different provider/model. Do not assume every HTTP 200 is a valid proposal.
+3. F3: if schema correction is needed, allow at most one correction per decision, using the same
+   schema and sanitized feedback; count both attempts in the shared budget before invocation.
+   Provider/auth/timeout failure is not a schema retry. Final failure remains explicit, safe and
+   cannot dispatch a worker or overwrite successful working context.
+4. F4: ordinary in-scope requests still use the real supervisor; unsupported requests terminate
+   without arbitrary tools/execution. Existing delegation bounds, paper-only/repository-only scope,
+   candidate/repository Gates, reject, ordinary resume and source/file budgets do not regress.
+5. F5: add only direct ordinary regressions for F1–F4. Ruff format/lint, strict mypy, locked
+   dependency validation, affected tests and the existing full offline suite pass with no new
+   dependency, raw-image/company-data access, transcript persistence or cancelled infrastructure.
+6. F6: one small authorized live regression group checks the configured model's supervisor,
+   explicit public paper, latest research and Code advice. Reuse the already authorized pinned
+   snapshot for Code when practical and label cached-source evidence honestly; do not pretend
+   this is a new GitHub download/Gate. A new live download/approval requires explicit human choice.
+   No-candidates and user rejection are legitimate outcomes. External unavailability or a
+   diagnostic deadline is recorded separately from a reproducible product defect; never replace
+   a failed live run with scripted success or repeatedly rerun until passing.
+7. F7: independent review and handoff identify actual commands, failures, schema/correction counts,
+   live attempts versus unrun checks, protected-path diff and clean Git provenance. No secrets,
+   raw provider body, full model response or private paths in tracked files or diagnostics.
+
+Verification uses the existing development Python with public `src` on PYTHONPATH. Run Ruff
+format/check, strict mypy, affected pytest and full `-m "not external and not gpu and not slurm"`
+pytest with no-cache provider/unique temporary directories; run `uv --offline --no-cache lock
+--check` if the locked environment permits it, and Git diff/protected-path checks. Keep real
+dotenv disabled only at its default path for offline tests, not for synthetic dotenv fixtures.
+Known sandbox ACL issues may use approved ordinary execution; do not edit ACLs or old caches.
+
+External effects are limited to authorized SHU/public metadata calls, read-only analysis of the
+already approved snapshot, ignored local artifacts, and local Git integration. Only central
+Settings may read the key; disable external tracing for live probes. Use isolated context and
+the abstract SEM target, not user dataset configuration. Live diagnosis has at most four calls;
+post-repair verification is one bounded group, retains the per-request 24-call budget, and records
+application-call versus SDK-retry counts honestly. A slow Code check may run up to six minutes;
+do not turn the earlier two-minute diagnostic limit into a product acceptance requirement.
