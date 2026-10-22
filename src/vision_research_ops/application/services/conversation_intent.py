@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 _ARXIV_ID_RE = re.compile(r"^\d{4}\.\d{4,5}(?:v\d+)?$", re.IGNORECASE)
 _GITHUB_RE = re.compile(r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
-_URL_TOKEN_RE = re.compile(r"https?://[^\s]+")
+_URL_TOKEN_RE = re.compile(r"https?://[^\s\u3000-\u303f\uff00-\uffef\u3400-\u9fff<>\"']+")
 _ARXIV_ID_TOKEN_RE = re.compile(r"\b\d{4}\.\d{4,5}(?:v\d+)?\b", re.IGNORECASE)
 _TRAILING_URL_PUNCTUATION = ".,;:!?)]}\uff0c\u3002\uff1b\uff1a\uff01\uff1f\uff09\u3011\u300b"
 
@@ -77,7 +77,10 @@ def normalize_arxiv_target(value: str) -> str | None:
     candidate = value.strip()
     if _ARXIV_ID_RE.fullmatch(candidate):
         return re.sub(r"v\d+$", "", candidate, flags=re.IGNORECASE)
-    parsed = urlparse(candidate)
+    try:
+        parsed = urlparse(candidate)
+    except ValueError:
+        return None
     if parsed.scheme != "https" or parsed.netloc != "arxiv.org" or parsed.query or parsed.fragment:
         return None
     parts = parsed.path.split("/")
@@ -92,7 +95,7 @@ def normalize_arxiv_target(value: str) -> str | None:
 def normalize_github_target(value: str) -> str | None:
     """Accept only a canonical public GitHub owner/repository URL, without I/O."""
     candidate = value.strip()
-    if _GITHUB_RE.fullmatch(candidate) is None:
+    if len(candidate) > 300 or _GITHUB_RE.fullmatch(candidate) is None:
         return None
     owner, repository = candidate.removeprefix("https://github.com/").split("/", maxsplit=1)
     if owner in {".", ".."} or repository in {".", ".."}:
@@ -176,16 +179,8 @@ def deterministic_intent(message: str) -> ConversationIntent | None:
         return ConversationIntent(intent=ConversationIntentName.OUT_OF_SCOPE)
     if targets:
         return targets[0]
-    if "github.com" in stripped.casefold():
-        return ConversationIntent(
-            intent=ConversationIntentName.ANALYZE_GITHUB_REPOSITORY,
-            github_url=stripped,
-        )
-    if "arxiv" in stripped.casefold() or "arxiv.org" in stripped.casefold():
-        return ConversationIntent(
-            intent=ConversationIntentName.ANALYZE_ARXIV_PAPER,
-            arxiv_id=stripped,
-        )
+    if "github.com" in stripped.casefold() or "arxiv" in stripped.casefold():
+        return ConversationIntent(intent=ConversationIntentName.OUT_OF_SCOPE)
     return None
 
 

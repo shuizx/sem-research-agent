@@ -299,6 +299,7 @@ class ConversationSession:
                 await self._run_supervisor(self._current_repository.repository_url)
             return True
         local_intents = {
+            ConversationIntentName.OUT_OF_SCOPE,
             ConversationIntentName.EXIT,
             ConversationIntentName.SHOW_HELP,
             ConversationIntentName.SHOW_STATUS,
@@ -344,6 +345,10 @@ class ConversationSession:
                     "目标不明确：一次只提供一个 arXiv 论文或一个规范 GitHub 仓库地址；"
                     "本轮未启动任何下游工作流。"
                 )
+            elif "github.com" in stripped.casefold():
+                self._emit("GitHub 代码分析失败：请提供一个规范的公开仓库地址。")
+            elif "arxiv" in stripped.casefold():
+                self._emit("论文分析失败：请提供一个规范 arXiv 地址或 ID。")
             else:
                 self._emit(
                     "此请求超出 SEM Research Agent 范围；仅支持论文检索/arXiv 分析、"

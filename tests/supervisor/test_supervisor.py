@@ -247,30 +247,30 @@ class FakeSupervisorModel:
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "response,code",
+    "response,code,attempts",
     [
-        ({"parsed": '{"action": "finish"}'}, "SUPERVISOR_SCHEMA_FAILED"),
-        (RuntimeError("private provider detail"), "SUPERVISOR_PROVIDER_FAILED"),
+        ({"parsed": '{"action": "finish"}'}, "SUPERVISOR_SCHEMA_FAILED", 2),
+        (RuntimeError("private provider detail"), "SUPERVISOR_PROVIDER_FAILED", 1),
     ],
 )
 async def test_live_boundary_is_strict_and_counted(
-    monkeypatch: pytest.MonkeyPatch, response: object, code: str
+    monkeypatch: pytest.MonkeyPatch, response: object, code: str, attempts: int
 ) -> None:
     model = FakeSupervisorModel(response)
     monkeypatch.setattr(
         "vision_research_ops.adapters.llm.supervisor.build_dashscope_chat_model", lambda _: model
     )
     policy = DashScopeSupervisorPolicy(Settings())
-    budget = ModelCallBudget(1)
+    budget = ModelCallBudget(attempts)
     with pytest.raises(SupervisorError, match=code):
         await policy.decide("research", [], budget)
-    assert budget.used == model.calls == 1
+    assert budget.used == model.calls == attempts
     with pytest.raises(SupervisorError, match="BUDGET_EXHAUSTED"):
         await policy.decide("research", [], budget)
-    assert model.calls == 1
+    assert model.calls == attempts
     with pytest.raises(SupervisorError, match="UNSAFE"):
         await policy.decide("read C:/private/images", [], ModelCallBudget())
-    assert model.calls == 1
+    assert model.calls == attempts
 
 
 @pytest.mark.parametrize(
