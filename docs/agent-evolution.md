@@ -10,8 +10,8 @@ three tasks. Only one implementation task may be active at a time.
 
 | Task | Status | Dependency |
 | --- | --- | --- |
-| P6-T11 Supervisor and delegation | READY_NOT_STARTED | Existing public main |
-| P6-T12 Research tool loop | NOT_STARTED | P6-T11 integrated |
+| P6-T11 Supervisor and delegation | DONE | Reviewed `1e113ad`; A1–A8 PASS |
+| P6-T12 Research tool loop | READY_NOT_STARTED | P6-T11 integrated |
 | P6-T13 Profile and context integration | NOT_STARTED | P6-T12 integrated |
 
 ## Shared decisions
