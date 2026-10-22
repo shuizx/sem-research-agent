@@ -12,7 +12,13 @@ three tasks. Only one implementation task may be active at a time.
 | --- | --- | --- |
 | P6-T11 Supervisor and delegation | DONE | Reviewed `1e113ad`; A1–A8 PASS |
 | P6-T12 Research tool loop | DONE | Reviewed `754f05d`; B1–B7 PASS |
-| P6-T13 Profile and context integration | READY_NOT_STARTED | P6-T12 integrated |
+| P6-T13 Profile and context integration | DONE | Reviewed `d3dd8b3`; C1–C7 PASS |
+
+All three tasks have completed their independent fixed-matrix reviews and local integration.
+No further implementation task is ready under this plan. Remote publication is separate.
+The final offline suite passed 746 tests with one existing Windows symlink skip. Authorized
+live attempts produced mixed results; complete final live paper-to-Code execution and provider
+stability are not claimed as verified. See the P6-T13 handoff for exact evidence and limits.
 
 ## Shared decisions
 
