@@ -11,7 +11,9 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 _ARXIV_ID_RE = re.compile(r"^\d{4}\.\d{4,5}(?:v\d+)?$", re.IGNORECASE)
 _GITHUB_RE = re.compile(r"^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
-_URL_TOKEN_RE = re.compile(r"https?://[^\s\u3000-\u303f\uff00-\uffef\u3400-\u9fff<>\"']+")
+_URL_TOKEN_RE = re.compile(
+    r"https?://[^\s\u2018\u2019\u201c\u201d\u3000-\u303f\uff00-\uffef\u3400-\u9fff<>\"']+"
+)
 _ARXIV_ID_TOKEN_RE = re.compile(r"\b\d{4}\.\d{4,5}(?:v\d+)?\b", re.IGNORECASE)
 _TRAILING_URL_PUNCTUATION = ".,;:!?)]}\uff0c\u3002\uff1b\uff1a\uff01\uff1f\uff09\u3011\u300b"
 
@@ -179,7 +181,7 @@ def deterministic_intent(message: str) -> ConversationIntent | None:
         return ConversationIntent(intent=ConversationIntentName.OUT_OF_SCOPE)
     if targets:
         return targets[0]
-    if "github.com" in stripped.casefold() or "arxiv" in stripped.casefold():
+    if _URL_TOKEN_RE.search(stripped):
         return ConversationIntent(intent=ConversationIntentName.OUT_OF_SCOPE)
     return None
 
