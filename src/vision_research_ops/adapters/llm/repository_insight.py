@@ -11,6 +11,7 @@ from vision_research_ops.application.services.repository_insight_planner import 
     LangGraphRepositoryInsightPlanner,
     RepositoryInsightToolAgent,
 )
+from vision_research_ops.application.services.target_profile import SafeTargetProfile
 from vision_research_ops.settings import Settings
 
 from .dashscope import build_dashscope_chat_model
@@ -20,6 +21,7 @@ def build_dashscope_repository_insight_planner(
     settings: Settings,
     *,
     before_model_call: Callable[[], None] | None = None,
+    target_profile: SafeTargetProfile | None = None,
 ) -> LangGraphRepositoryInsightPlanner:
     """Bind exactly the four repository-insight tools to live DashScope ChatOpenAI."""
     client = build_dashscope_chat_model(settings)
@@ -40,6 +42,7 @@ def build_dashscope_repository_insight_planner(
         provider_id="dashscope-openai-compatible",
         model_id=settings.llm_model,
         before_model_call=before_model_call,
+        target_profile=target_profile,
     )
 
 

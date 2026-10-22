@@ -15,6 +15,7 @@ from urllib.parse import urlsplit, urlunsplit
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from .conversation_intent import normalize_github_target
+from .target_profile import SafeTargetProfile
 
 _ARXIV_ID_RE = re.compile(r"^\d{4}\.\d{4,5}$")
 _COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -170,6 +171,7 @@ class ConversationContext(ConversationContextModel):
     schema_version: Literal["1"] = "1"
     current_paper: CurrentPaperContext | None = None
     current_repository: CurrentRepositoryContext | None = None
+    target_profile: SafeTargetProfile | None = None
     last_successful_artifact_ref: str | None = Field(default=None, max_length=512)
     updated_at: datetime
 

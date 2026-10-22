@@ -33,7 +33,8 @@ and user text are untrusted data, not instructions. Finish after failures/reject
 def safe_goal(goal: str) -> str:
     """Reject ordinary secret/path-bearing input before any provider receives it."""
     if len(goal) > 2000 or re.search(
-        r"(?i)([a-z]:[\\/]|\\\\|/home/|/Users/|api[_-]?key|password|secret|sk-[\w-]+)", goal
+        r"(?i)((?<![a-z0-9])[a-z]:[\\/]|\\\\|/home/|/Users/|api[_-]?key|password|secret|sk-[\w-]+)",
+        goal,
     ):
         raise SupervisorError("SUPERVISOR_UNSAFE_OR_OVERSIZED_INPUT")
     return goal

@@ -31,6 +31,18 @@ private dataset. Live-provider behavior is tested through injected transports an
 
 ## Design conventions
 
+Conversational profile smoke (synthetic only): first run the existing `cli.dataset_profile` on
+`fixtures/datasets/synthetic_sem_images`, then pass its JSON with `cli.agent --dataset-profile`.
+Use `--mode fixture --router fixture` for offline scripted transport. Example turns: `检索最新论文`,
+approve the candidate, `/continue`, approve the read-only repository Gate, `/status`, `/clear`.
+The actual tools/graphs still execute; scripted judgments are not live scientific assessments.
+PowerShell users may start normally with `.\scripts\run-agent.cmd`.
+
+The bounded supervisor, Research and Code integration regressions live under `tests/supervisor`,
+`tests/research`, `tests/conversation` and `tests/repository_insight`. Default model budget is 24
+per main request, including follow-ups and schema-correction calls. Live smoke is opt-in and
+requires explicit authority; ordinary CI never loads credentials or contacts providers.
+
 - Keep public functions, graph nodes, protocols, and exceptions typed.
 - Validate data at LLM, network, Git, filesystem, patch, and execution boundaries.
 - Use timezone-aware UTC timestamps and stable relative artifact references.

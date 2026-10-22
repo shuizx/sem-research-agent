@@ -18,6 +18,7 @@ from vision_research_ops.application.services.repository_insight_planner import 
     REPOSITORY_INSIGHT_TOOLS,
     LangGraphRepositoryInsightPlanner,
 )
+from vision_research_ops.application.services.target_profile import SafeTargetProfile
 
 
 def _tool_payload(message: ToolMessage) -> dict[str, object]:
@@ -63,6 +64,8 @@ class _ScriptedRepositoryInsightAgent:
             "read_repository_file",
         ]:
             read = _tool_payload(tool_messages[-1])
+            target = _tool_payload(tool_messages[1])
+            channels = target.get("input_channels", "unknown")
             path = read.get("path")
             if not isinstance(path, str):
                 raise ValueError("fixture repository insight requires a read source path")
@@ -76,7 +79,7 @@ class _ScriptedRepositoryInsightAgent:
                         path=path,
                         observation=(
                             "This file provides a concrete integration point that must be "
-                            "reviewed against the one-channel SEM data contract."
+                            f"reviewed against the {channels}-channel target data contract."
                         ),
                     )
                 ],
@@ -85,7 +88,7 @@ class _ScriptedRepositoryInsightAgent:
                         area="DATA_LOADING",
                         target_paths=[path],
                         recommendation=(
-                            "Align the observed input pipeline with one-channel SEM images and "
+                            f"Align the observed input pipeline with {channels}-channel images and "
                             "a public or user-authorized label mapping."
                         ),
                         rationale=(
@@ -125,12 +128,13 @@ class _ScriptedRepositoryInsightAgent:
 class FixtureRepositoryInsightPlanner(LangGraphRepositoryInsightPlanner):
     """Production planner with deterministic model choices for offline tests/debugging."""
 
-    def __init__(self) -> None:
+    def __init__(self, target_profile: SafeTargetProfile | None = None) -> None:
         super().__init__(
             agent_factory=_ScriptedRepositoryInsightAgent,
             planner_kind="SCRIPTED_TOOL_CALLING",
             provider_id="offline-fixture",
             model_id="scripted-repository-insight-v1",
+            target_profile=target_profile,
         )
 
 

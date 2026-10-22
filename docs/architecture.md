@@ -24,6 +24,30 @@ rejection stops downstream execution and produces an explicit terminal record.
 
 ## Layers
 
+The default conversational entry is a supervisor `StateGraph` that observes compact typed worker
+results and delegates serially to Research or Code (three delegations maximum). Research uses
+model → ToolNode → model with search/inspect/submit/finish tools (two searches, five papers).
+Code uses its existing four read-only tools; public repository conversation never enters patch,
+smoke or training. The controlled synthetic five-stage sample remains separate.
+The deterministic boundary rejects duplicate completed worker/target pairs, unrequested Code
+expansion from a paper-only request and ordinary explicit negatives such as `no code` or
+`不分析代码`. Direct repository-only requests cannot expand into unrelated Research. These are
+small scope guards, not a general natural-language authorization parser.
+
+One default-24 request budget counts every live supervisor/worker invocation before execution,
+including direct-paper schema corrections and `/continue`. Child graphs reuse inherited
+interrupt/resume checkpoints; human approval never comes from a model. Successful small working
+context is persisted, not pending gates or transcripts. Local traces contain delegation outcomes,
+call counts and separate bounded tool event hashes, not raw model messages.
+
+`VRO_DATASET_PROFILE`/`--dataset-profile` selects an existing generated DatasetProfile. Local
+validation projects numeric/enum facts into `SafeTargetProfile`; the Code tool and model observe
+that actual snapshot. Context embeds only this safe snapshot; content-addressed copies under
+`target-profiles/` support provenance, not automatic dataset refresh. An explicit file always
+revalidates and fails closed. Changing safe target facts or selecting a new paper clears old Code
+context. Without explicit configuration, restored safe facts remain a frozen snapshot; otherwise
+Code marks its abstract SEM default explicitly.
+
 - `domain/` contains strict versioned records, value objects, enums, and stable failures.
 - `ports/` defines narrow provider-neutral interfaces for side effects.
 - `adapters/` implements DashScope, arXiv, GitHub, source-archive, and local-execution boundaries.

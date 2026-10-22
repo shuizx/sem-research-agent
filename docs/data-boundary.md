@@ -16,22 +16,31 @@ does not imply that any private input or result is present in the public tree.
 
 ## Dataset profile boundary
 
-`VRO_DATASET_ROOT` is blank in `.env.example` and is reserved for local dataset-profile
-integration. The committed sample does not require it. A private-data integration must enforce the
+`VRO_DATASET_ROOT` is blank in `.env.example` and is used only by the explicit local profiler.
+`VRO_DATASET_PROFILE` selects its generated JSON for conversational Code advice. The committed
+sample does not require either. The local integration enforces the
 following flow:
 
 ```text
 local dataset root -> deterministic local profiling -> sanitized DatasetProfile -> workflow/LLM
 ```
 
-An external LLM may receive only allowlisted profile fields such as task type, modality, channel
-count, dimensions, dtype, anonymized label vocabulary, class counts, split unit, imbalance
-summary, and a non-reversible content fingerprint. It must not receive image bytes, absolute paths,
+The Code LLM receives only an explicit typed projection: task, modality, channels, dimensions,
+class count, anonymous sorted count values, aggregate split counts, split-strategy enum,
+proportions, numeric resize and known normalization enum. Dataset IDs, label names/IDs, group keys,
+holdout values, source authorization/configuration and original content/location references are
+excluded even if they occur in a valid profile. It must not receive image bytes, absolute paths,
 company or customer names, equipment identifiers, wafer or lot identifiers, credentials, or
 internal endpoints.
 
 A dataset profile is versioned evidence, not a permanent constant. Image, label, split, or
 preprocessing changes require a new fingerprint and regenerated profile.
+
+Code analysis never opens images or profiles a root. Missing/invalid explicit JSON fails without
+abstract fallback or parser/path details. Context stores only the safe facts snapshot, not the
+original path; restart without explicit configuration restores frozen facts, not a refreshed
+dataset. Explicit configuration always revalidates. A changed projection invalidates old Code
+results; changes only in excluded metadata do not change the safe facts fingerprint.
 
 ## Local profiling contract
 

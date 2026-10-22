@@ -23,6 +23,7 @@ from vision_research_ops.application.services.conversation_intent import (
     FixtureIntentRouter,
     StructuredIntentRouter,
 )
+from vision_research_ops.application.services.target_profile import TargetProfileError
 from vision_research_ops.cli.conversation import (
     ConversationMode,
     ConversationSession,
@@ -68,6 +69,7 @@ class AgentCliOptions:
     workspace: Path
     debug_json: bool
     context_path: Path | None = None
+    dataset_profile_path: Path | None = None
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -76,6 +78,12 @@ def build_parser() -> argparse.ArgumentParser:
         description="Run the bounded SEM Research Agent conversational pipeline CLI."
     )
     parser.add_argument("--mode", choices=("fixture", "live"), default="live")
+    parser.add_argument(
+        "--dataset-profile",
+        type=Path,
+        default=None,
+        help="explicit generated DatasetProfile JSON (local validation only)",
+    )
     parser.add_argument(
         "--router",
         choices=("fixture", "live"),
@@ -112,6 +120,7 @@ def parse_options(argv: Sequence[str] | None = None) -> AgentCliOptions:
         router_mode=cast(RouterMode, namespace.router),
         workspace=cast(Path, namespace.workspace),
         debug_json=cast(bool, namespace.debug_json),
+        dataset_profile_path=cast(Path | None, namespace.dataset_profile),
         context_path=(
             configured_context
             if configured_context is not None
@@ -135,6 +144,19 @@ async def run(
 ) -> int:
     """Run the interactive REPL until the user exits or standard input closes."""
     resolved_settings = settings or Settings.from_env()
+    if options.dataset_profile_path is not None:
+        resolved_settings = resolved_settings.model_copy(
+            update={"dataset_profile_path": options.dataset_profile_path}
+        )
+    # Validate before constructing any provider client or entering the conversation.
+    if resolved_settings.dataset_profile_path is not None:
+        from vision_research_ops.application.services.target_profile import load_target_profile
+
+        try:
+            load_target_profile(resolved_settings.dataset_profile_path)
+        except TargetProfileError:
+            output_fn("DATASET_PROFILE_INVALID_OR_MISSING：显式画像无效；未启动工作流。")
+            return 2
     session = ConversationSession(
         workspace=options.workspace,
         mode=options.mode,

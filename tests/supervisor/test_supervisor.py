@@ -125,7 +125,7 @@ class RepeatingPolicy:
         self, goal: str, observations: list[WorkerResult], budget: ModelCallBudget
     ) -> SupervisorProposal:
         budget.consume()
-        return SupervisorProposal(action="research")
+        return SupervisorProposal(action="research", target=f"2608.0123{len(observations) % 3}")
 
 
 @pytest.mark.asyncio
@@ -143,7 +143,10 @@ async def test_request_bounds(limit: int, code: str, count: int) -> None:
     graph = build_supervisor_graph(
         policy=RepeatingPolicy(), worker=worker, budget=ModelCallBudget(limit)
     )
-    final = await graph.ainvoke(initial("research"), config={"configurable": {"thread_id": code}})
+    final = await graph.ainvoke(
+        initial("research 2608.01230 2608.01231 2608.01232"),
+        config={"configurable": {"thread_id": code}},
+    )
     assert final["failure_code"] == code
     assert final["delegations"] == count
 
@@ -268,3 +271,118 @@ async def test_live_boundary_is_strict_and_counted(
     with pytest.raises(SupervisorError, match="UNSAFE"):
         await policy.decide("read C:/private/images", [], ModelCallBudget())
     assert model.calls == 1
+
+
+@pytest.mark.parametrize(
+    "goal", ["https://arxiv.org/abs/2608.01234", "https://github.com/example/sem-classifier"]
+)
+def test_public_https_targets_are_not_mistaken_for_drive_paths(goal):
+    from vision_research_ops.adapters.llm.supervisor import safe_goal
+
+    assert safe_goal(goal) == goal
+    with pytest.raises(SupervisorError, match="UNSAFE"):
+        safe_goal(r"read C:\private\images")
+
+
+def test_worker_reason_is_a_stable_code_not_raw_provider_text():
+    assert (
+        WorkerResult(worker="research", status="failed", reason="ARXIV_REQUEST_FAILED").reason
+        == "ARXIV_REQUEST_FAILED"
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "second_action,code",
+    [("research", "SUPERVISOR_DUPLICATE_TASK"), ("code", "SUPERVISOR_CODE_NOT_REQUESTED")],
+)
+async def test_bad_live_style_proposals_cannot_repeat_or_expand_paper_only(second_action, code):
+    class Policy:
+        async def decide(self, goal, observations, budget):
+            if not observations:
+                return SupervisorProposal(action="research", target="2010.11929")
+            return SupervisorProposal(
+                action=second_action,
+                target="2010.11929"
+                if second_action == "research"
+                else "https://github.com/example/sem-classifier",
+            )
+
+    calls = []
+
+    async def worker(task):
+        calls.append(task)
+        return WorkerResult(
+            worker="research",
+            status="success",
+            code_urls=["https://github.com/example/sem-classifier"],
+        )
+
+    graph = build_supervisor_graph(policy=Policy(), worker=worker, budget=ModelCallBudget())
+    final = await graph.ainvoke(
+        initial(
+            "请分析这篇论文的主要内容及对 SEM 缺陷分类的适用性：https://arxiv.org/abs/2010.11929"
+        ),
+        config={"configurable": {"thread_id": code}},
+    )
+    assert len(calls) == final["delegations"] == 1
+    assert final["failure_code"] == code
+
+
+@pytest.mark.asyncio
+async def test_repository_only_cannot_expand_into_unrequested_research():
+    async def worker(task):
+        pytest.fail("repository-only request cannot start unrelated Research")
+
+    graph = build_supervisor_graph(
+        policy=InvalidPolicy("research"), worker=worker, budget=ModelCallBudget()
+    )
+    final = await graph.ainvoke(
+        initial("https://github.com/example/sem-classifier"),
+        config={"configurable": {"thread_id": "repository-only-scope"}},
+    )
+    assert final["failure_code"] == "SUPERVISOR_RESEARCH_NOT_REQUESTED"
+    assert final["delegations"] == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "goal",
+    [
+        "仅检索和分析论文，不分析代码",
+        "search papers, no code",
+        "paper-only research",
+        "find papers without code analysis",
+    ],
+)
+async def test_explicit_code_decline_is_not_keyword_authorization(goal):
+    class Policy:
+        async def decide(self, goal, observations, budget):
+            return (
+                SupervisorProposal(action="research")
+                if not observations
+                else SupervisorProposal(
+                    action="code", target="https://github.com/example/sem-classifier"
+                )
+            )
+
+    calls = []
+
+    async def worker(task):
+        calls.append(task.worker)
+        return WorkerResult(
+            worker=task.worker,
+            status="success",
+            code_urls=["https://github.com/example/sem-classifier"],
+        )
+
+    graph = build_supervisor_graph(policy=Policy(), worker=worker, budget=ModelCallBudget())
+    final = await graph.ainvoke(initial(goal), config={"configurable": {"thread_id": goal}})
+    assert calls == ["research"]
+    assert final["failure_code"] == "SUPERVISOR_CODE_NOT_REQUESTED"
+    assert (
+        WorkerResult(
+            worker="research", status="failed", reason="read C:/private with secret"
+        ).reason
+        == "WORKER_FAILED"
+    )

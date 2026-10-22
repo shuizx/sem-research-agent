@@ -88,6 +88,7 @@ def test_context_schema_is_strict_small_versioned_and_round_trips(tmp_path: Path
         "schema_version",
         "current_paper",
         "current_repository",
+        "target_profile",
         "last_successful_artifact_ref",
         "updated_at",
     }

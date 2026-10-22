@@ -37,6 +37,7 @@ class Settings(BaseModel):
         DASHSCOPE_OPENAI_BASE_URL
     )
     dataset_root: Path | None = None
+    dataset_profile_path: Path | None = None
     research_output_root: Path = Path("var/research")
     research_overlap_minutes: int = Field(default=60, ge=0, le=24 * 60)
     research_initial_lookback_hours: int = Field(default=24, ge=1, le=24 * 30)
@@ -65,10 +66,14 @@ class Settings(BaseModel):
 
         api_key = values.get("DASHSCOPE_API_KEY")
         dataset_root = values.get("VRO_DATASET_ROOT")
+        dataset_profile = values.get("VRO_DATASET_PROFILE")
         return cls(
             dashscope_api_key=None if not api_key else SecretStr(api_key),
             llm_model=values.get("VRO_LLM_MODEL", "qwen-plus"),
             dataset_root=Path(dataset_root) if dataset_root and dataset_root.strip() else None,
+            dataset_profile_path=Path(dataset_profile)
+            if dataset_profile and dataset_profile.strip()
+            else None,
             research_output_root=Path(values.get("VRO_RESEARCH_OUTPUT_ROOT", "var/research")),
             research_overlap_minutes=parse_int("VRO_RESEARCH_OVERLAP_MINUTES", 60),
             research_initial_lookback_hours=parse_int(

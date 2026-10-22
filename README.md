@@ -89,7 +89,7 @@ VRO_DATASET_ROOT=
 Start the conversational interface:
 
 ```powershell
-.\scripts\run-agent.ps1
+.\scripts\run-agent.cmd
 ```
 
 The live path uses `langchain_openai.ChatOpenAI` with DashScope's OpenAI-compatible endpoint,
@@ -99,11 +99,19 @@ boundary. Missing credentials or invalid structured responses fail explicitly.
 To inspect the interface without contacting external services:
 
 ```powershell
-.\scripts\run-agent.ps1 -SampleMode
+.\scripts\run-agent.cmd -SampleMode
 ```
 
-`VRO_DATASET_ROOT` is reserved for local dataset-profile integration and is blank by default. The
-bundled sample does not require a private dataset path.
+`VRO_DATASET_ROOT` is used only by the explicit local profiler. The conversation never opens images.
+The bundled sample does not require a private dataset path. The `.cmd` wrapper works with normal
+PowerShell execution-policy defaults; it does not change the machine policy.
+
+The default conversation uses one LangGraph supervisor and two serial workers: Research searches,
+reads and assesses papers through tools; Code reads a fixed public GitHub snapshot and proposes
+adaptation advice. Public GitHub conversation ends at read-only advice: it does not patch, smoke
+test or train upstream code. The five-stage controlled fixture sample above is a separate command.
+Each main request has at most three delegations and 24 live model calls shared by supervisor,
+Research, Code and schema correction. Help/status/clear/exit are local deterministic commands.
 
 ### Local dataset profile
 
@@ -119,6 +127,26 @@ The root must contain `dataset.json`, `samples.csv`, and `images/`. The profiler
 standard PNG or PGM images, rejects symlinks and non-canonical paths, and writes a sanitized
 profile below `var/dataset-profiles/`. The command emits only the dataset ID, version, content
 hash, sample count, and relative profile reference.
+
+Select that generated JSON explicitly for conversational Code analysis:
+
+```powershell
+uv run python -m vision_research_ops.cli.agent --dataset-profile var/dataset-profiles/<id>/<version>/profile.json
+```
+
+Alternatively set `VRO_DATASET_PROFILE` in the ignored `.env`. Invalid or missing explicit files
+fail before model calls, without fallback. Without configuration, the tool clearly reports an
+`abstract_default`, not observed dataset facts. Code receives only numeric/enum safe facts, never
+dataset IDs, labels, groups, image paths, source configuration or image bytes.
+
+Successful paper/repository context and the safe target snapshot survive restart in bounded local
+JSON, not a chat transcript. With no explicit file on restart, this is a frozen statistics snapshot,
+not a refreshed dataset view. Explicit files are always revalidated and replace that snapshot;
+changed safe facts clear stale Code context. New paper selection also clears old Code context.
+`/continue` uses the current paper's unique canonical GitHub URL through the same supervisor and
+human Gate; absent/ambiguous links ask for clarification. `分析当前仓库` reuses the current repository.
+`/clear` removes working context but not artifacts; an explicit startup configuration remains active
+and is revalidated on the next request. Compact delegation/count traces are local under `var/`.
 
 ## Sample mode and evidence
 

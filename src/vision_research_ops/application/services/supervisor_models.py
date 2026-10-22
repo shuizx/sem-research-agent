@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -51,6 +52,15 @@ class WorkerResult(BaseModel):
     )
     reason: str | None = Field(default=None, max_length=120)
     paper_id: str | None = Field(default=None, max_length=160)
+
+    @field_validator("reason", mode="before")
+    @classmethod
+    def _stable_reason(cls, value: object) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, str) and re.fullmatch(r"[A-Z][A-Z0-9_]{0,119}", value):
+            return value
+        return "WORKER_FAILED"
 
     @field_validator("code_urls")
     @classmethod

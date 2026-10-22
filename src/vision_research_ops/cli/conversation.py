@@ -55,6 +55,10 @@ from vision_research_ops.application.services.supervisor_models import (
     WorkerResult,
     WorkerTask,
 )
+from vision_research_ops.application.services.target_profile import (
+    TargetProfileError,
+    load_target_profile,
+)
 from vision_research_ops.application.workflows import (
     build_repository_insight_graph,
     workflow_config,
@@ -161,8 +165,23 @@ class ConversationSession:
         self._current_paper = context.current_paper
         self._current_repository = context.current_repository
         self._last_artifact_ref = context.last_successful_artifact_ref
+        self._target_profile = context.target_profile
+        if settings is not None and settings.dataset_profile_path is not None:
+            configured = load_target_profile(settings.dataset_profile_path)
+            if configured != self._target_profile:
+                self._current_repository = None
+                self._last_artifact_ref = (
+                    self._current_paper.artifact_ref if self._current_paper else None
+                )
+            self._target_profile = configured
         self._memory_restored = False if loaded is None else loaded.restored
         self._memory_warning = None if loaded is None else loaded.warning
+        if (
+            settings is not None
+            and settings.dataset_profile_path is not None
+            and not self._persist_context()
+        ):
+            self._memory_warning = "目标快照未保存；本次会话仍使用显式画像。"
 
     @property
     def debug_json(self) -> bool:
@@ -186,6 +205,11 @@ class ConversationSession:
             ),
             "示例：开始检索文献｜当前候选｜继续找代码｜https://arxiv.org/abs/2608.01234｜/help",
         ]
+        lines.append(
+            "目标画像：configured_local_profile（仅安全统计快照）。"
+            if self._target_profile
+            else "目标画像：abstract_default（抽象 SEM 示例，并非本地数据事实）。"
+        )
         if self._memory_warning is not None:
             lines.append(self._memory_warning)
         elif self._memory_restored:
@@ -238,6 +262,42 @@ class ConversationSession:
             self._emit(f"调试 JSON：{'开启' if self._debug_json else '关闭'}。")
             return True
         intent = deterministic_intent(stripped)
+        if self._supervisor_policy is not None and stripped.casefold() in {
+            "分析当前论文",
+            "分析这篇论文",
+            "analyze current paper",
+        }:
+            if self._current_paper is None or self._current_paper.arxiv_id is None:
+                self._emit("暂无唯一 arXiv 论文目标；请提供规范 arXiv ID 或 URL。")
+            else:
+                await self._run_supervisor(f"https://arxiv.org/abs/{self._current_paper.arxiv_id}")
+            return True
+        if self._supervisor_policy is not None and stripped.casefold() in {"继续", "继续分析"}:
+            self._emit(
+                "请明确继续当前论文找代码，还是分析当前仓库；可使用 /continue 或 分析当前仓库。"
+            )
+            return True
+        if self._supervisor_policy is not None and stripped.casefold() in {
+            "继续查代码",
+            "分析这篇论文的代码",
+            "这篇论文的代码",
+            "continue",
+            "find its code",
+        }:
+            await self._continue_current_paper()
+            return True
+        if self._supervisor_policy is not None and stripped.casefold() in {
+            "当前仓库",
+            "分析当前仓库",
+            "继续分析仓库",
+            "current repository",
+            "analyze current repository",
+        }:
+            if self._current_repository is None:
+                self._emit("暂无当前仓库；请提供一个规范 GitHub 地址。")
+            else:
+                await self._run_supervisor(self._current_repository.repository_url)
+            return True
         local_intents = {
             ConversationIntentName.EXIT,
             ConversationIntentName.SHOW_HELP,
@@ -351,6 +411,7 @@ class ConversationSession:
             current_paper=self._current_paper,
             current_repository=self._current_repository,
             last_successful_artifact_ref=self._last_artifact_ref,
+            target_profile=self._target_profile,
             updated_at=self._clock(),
         )
 
@@ -380,6 +441,7 @@ class ConversationSession:
         self._current_paper = None
         self._current_repository = None
         self._last_artifact_ref = None
+        self._target_profile = None
         self._memory_restored = False
         self._memory_warning = None
         self._emit("会话记忆已清除；历史论文、仓库和训练等业务产物均未删除。")
@@ -402,7 +464,10 @@ class ConversationSession:
                 "请提供一个规范 https://github.com/<owner>/<repo> 供只读分析。"
             )
             return
-        await self._run_repository_insight(github_url)
+        if self._supervisor_policy is not None:
+            await self._run_supervisor(github_url)
+        else:
+            await self._run_repository_insight(github_url)
 
     def _set_current_paper_from_assessment(
         self, assessment: ResearchPaperAssessment, artifact_ref: str
@@ -613,11 +678,32 @@ class ConversationSession:
     async def _run_supervisor(self, goal: str) -> None:
         """Present only top-level interrupts and resume the pending supervisor request."""
         assert self._supervisor_policy is not None
+        if self._settings is not None and self._settings.dataset_profile_path is not None:
+            try:
+                configured = load_target_profile(self._settings.dataset_profile_path)
+            except TargetProfileError:
+                self._emit("DATASET_PROFILE_INVALID_OR_MISSING：未调用模型或工具。")
+                return
+            if configured != self._target_profile:
+                self._current_repository = None
+                self._last_artifact_ref = (
+                    self._current_paper.artifact_ref if self._current_paper else None
+                )
+            self._target_profile = configured
         request_id = f"supervisor-{uuid4().hex[:12]}"
+        if self._target_profile is not None:
+            target_path = self._workspace / self._target_profile.snapshot_ref
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            target_path.write_text(self._target_profile.model_dump_json(indent=2), encoding="utf-8")
         budget = ModelCallBudget()
         runs: dict[tuple[str, str | None], Callable[[], object]] = {}
 
         async def worker(task: WorkerTask) -> WorkerResult:
+            self._emit(
+                "Research：检索和阅读论文证据。"
+                if task.worker == "research"
+                else "Code：读取只读代码证据并比较目标画像。"
+            )
             self._last_intent = (
                 ConversationIntentName.ANALYZE_GITHUB_REPOSITORY
                 if task.worker == "code"
@@ -669,6 +755,7 @@ class ConversationSession:
                         mode=self._mode,
                         settings=self._settings,
                         before_model_call=budget.consume,
+                        target_profile=self._target_profile,
                     )
                     runs[key] = code_worker(code_deps, workflow_id, task.target)
             from collections.abc import Awaitable
@@ -697,13 +784,18 @@ class ConversationSession:
                         f"公开 GitHub 代码分析完成：{stored_code.repository_url}；"
                         f"固定 commit：{stored_code.resolution.commit_sha}；"
                         f"适配程度：{stored_code.advice.adaptation_fit}。\n"
-                        f"代码概要：{stored_code.advice.repository_summary}"
+                        f"代码概要：{stored_code.advice.repository_summary}\n"
+                        f"建议：{stored_code.advice.suggestions[0].recommendation}\n"
+                        "边界：仅只读建议；未 patch、Smoke 或训练。"
                     )
             if result.worker == "code" and result.status == "rejected":
                 self._emit(
                     "已按人工决定取消公开仓库分析；未访问 GitHub、未下载源码快照、未调用代码 LLM。"
                 )
-            self._emit(f"{result.worker}：{result.status}；产物：{result.artifact_ref or '无'}。")
+            reason = f"；原因：{result.reason}" if result.reason else ""
+            self._emit(
+                f"{result.worker}：{result.status}{reason}；产物：{result.artifact_ref or '无'}。"
+            )
             return result
 
         graph = build_supervisor_graph(
@@ -750,9 +842,18 @@ class ConversationSession:
             payload = self._repository_gate_payload(cast(Mapping[str, object], final))
         trace = {
             "delegations": final["delegations"],
-            "observations": final["observations"],
+            "observations": [
+                {key: item[key] for key in ("worker", "status", "artifact_ref", "reason")}
+                for item in final["observations"]
+            ],
             "failure_code": final["failure_code"],
             "model_calls": budget.used,
+            "target_provenance": "configured_local_profile"
+            if self._target_profile
+            else "abstract_default",
+            "target_snapshot_ref": self._target_profile.snapshot_ref
+            if self._target_profile
+            else None,
         }
         path = self._workspace / "supervisor" / f"{request_id}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -822,6 +923,7 @@ class ConversationSession:
                 workspace=self._workspace,
                 mode=self._mode,
                 settings=self._settings,
+                target_profile=self._target_profile,
             )
             graph = build_repository_insight_graph()
             paused = await graph.ainvoke(
