@@ -25,6 +25,8 @@ def test_local_env_loads_secret_without_overriding_process_environment(
         encoding="utf-8",
     )
     monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.delenv("VRO_LLM_API_KEY", raising=False)
+    monkeypatch.delenv("VRO_LLM_BASE_URL", raising=False)
     monkeypatch.setenv("VRO_LLM_MODEL", "process-model")
 
     assert load_local_env(env_file)
@@ -91,7 +93,7 @@ def test_settings_parse_only_supported_environment_and_redact_key() -> None:
 
 
 def test_live_llm_factory_requires_key_and_passes_secret_to_chat_openai(monkeypatch) -> None:
-    """Live construction is explicit, fixed to DashScope, and never performs a request."""
+    """Legacy live construction defaults to DashScope and never performs a request."""
     with pytest.raises(ValueError, match="DASHSCOPE_API_KEY"):
         build_dashscope_llm(Settings())
 

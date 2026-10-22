@@ -33,7 +33,7 @@ def build_dashscope_adaptation_planner(settings: Settings) -> LangGraphAdaptatio
     return LangGraphAdaptationPlanner(
         agent_factory=bind,
         planner_kind="DASHSCOPE_TOOL_CALLING",
-        provider_id="dashscope-openai-compatible",
+        provider_id=settings.llm_provider_id,
         model_id=settings.llm_model,
     )
 

@@ -1,4 +1,4 @@
-"""DashScope OpenAI-compatible structured LLM adapter."""
+"""OpenAI-compatible structured LLM adapter with stable legacy DashScope entry names."""
 
 from __future__ import annotations
 
@@ -199,12 +199,14 @@ class DashScopeStructuredLLM:
         client: BaseChatModel,
         *,
         model_id: str,
+        provider_id: str = "dashscope-openai-compatible",
         before_model_call: Callable[[], None] | None = None,
     ) -> None:
         if not model_id.strip():
             raise ValueError("model_id must not be blank")
         self._client = client
         self._model_id = model_id
+        self._provider_id = provider_id
         self._before_model_call = before_model_call
 
     @staticmethod
@@ -322,7 +324,7 @@ class DashScopeStructuredLLM:
         return StructuredGenerationResult[TStructured](
             schema_version="1",
             value=value,
-            provider_id="dashscope-openai-compatible",
+            provider_id=self._provider_id,
             model_id=self._model_id,
             usage=usage,
             latency_ms=latency_ms,
@@ -334,10 +336,7 @@ class DashScopeStructuredLLM:
 
 def build_dashscope_chat_model(settings: Settings) -> ChatOpenAI:
     """Build the injected OpenAI-compatible chat transport without reading env here."""
-    api_key = settings.dashscope_api_key
-    if api_key is None:
-        settings.require_dashscope_api_key()
-        raise AssertionError("unreachable")
+    api_key = settings.require_llm_api_key()
     return ChatOpenAI(
         api_key=api_key,
         model=settings.llm_model,
@@ -356,7 +355,10 @@ def build_dashscope_llm(
     """Build the schema-bound LLM adapter over the shared chat transport."""
     client = build_dashscope_chat_model(settings)
     return DashScopeStructuredLLM(
-        client, model_id=settings.llm_model, before_model_call=before_model_call
+        client,
+        model_id=settings.llm_model,
+        provider_id=settings.llm_provider_id,
+        before_model_call=before_model_call,
     )
 
 

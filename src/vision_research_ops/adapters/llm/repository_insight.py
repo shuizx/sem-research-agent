@@ -23,7 +23,7 @@ def build_dashscope_repository_insight_planner(
     before_model_call: Callable[[], None] | None = None,
     target_profile: SafeTargetProfile | None = None,
 ) -> LangGraphRepositoryInsightPlanner:
-    """Bind exactly the four repository-insight tools to live DashScope ChatOpenAI."""
+    """Bind exactly the four repository-insight tools to the configured ChatOpenAI transport."""
     client = build_dashscope_chat_model(settings)
 
     def bind(tools: Sequence[BaseTool]) -> RepositoryInsightToolAgent:
@@ -39,7 +39,7 @@ def build_dashscope_repository_insight_planner(
     return LangGraphRepositoryInsightPlanner(
         agent_factory=bind,
         planner_kind="DASHSCOPE_TOOL_CALLING",
-        provider_id="dashscope-openai-compatible",
+        provider_id=settings.llm_provider_id,
         model_id=settings.llm_model,
         before_model_call=before_model_call,
         target_profile=target_profile,

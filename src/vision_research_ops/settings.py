@@ -5,14 +5,12 @@ from __future__ import annotations
 from collections.abc import Mapping
 from os import environ
 from pathlib import Path
-from typing import Literal
+from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 
-DASHSCOPE_OPENAI_BASE_URL: Literal["https://dashscope.aliyuncs.com/compatible-mode/v1"] = (
-    "https://dashscope.aliyuncs.com/compatible-mode/v1"
-)
+DASHSCOPE_OPENAI_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
 LOCAL_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
@@ -29,13 +27,13 @@ class Settings(BaseModel):
         extra="forbid",
         strict=True,
         validate_default=True,
+        hide_input_in_errors=True,
     )
 
     dashscope_api_key: SecretStr | None = None
+    llm_api_key: SecretStr | None = None
     llm_model: str = "qwen-plus"
-    llm_base_url: Literal["https://dashscope.aliyuncs.com/compatible-mode/v1"] = (
-        DASHSCOPE_OPENAI_BASE_URL
-    )
+    llm_base_url: str = DASHSCOPE_OPENAI_BASE_URL
     dataset_root: Path | None = None
     dataset_profile_path: Path | None = None
     research_output_root: Path = Path("var/research")
@@ -49,6 +47,38 @@ class Settings(BaseModel):
         if not value.strip():
             raise ValueError("VRO_LLM_MODEL must not be blank")
         return value
+
+    @field_validator("llm_base_url")
+    @classmethod
+    def _https_endpoint(cls, value: str) -> str:
+        """Keep credentials out of the URL and require the existing verified TLS transport."""
+        try:
+            endpoint = urlsplit(value)
+            valid = (
+                endpoint.scheme == "https"
+                and bool(endpoint.hostname)
+                and endpoint.username is None
+                and endpoint.password is None
+                and not endpoint.query
+                and not endpoint.fragment
+                and not any(character.isspace() for character in value)
+                and "\\" not in value
+            )
+            _ = endpoint.port
+        except ValueError:
+            valid = False
+        if not valid:
+            raise ValueError(
+                "VRO_LLM_BASE_URL must be an HTTPS URL without credentials or query/fragment"
+            )
+        return value.rstrip("/")
+
+    @property
+    def llm_provider_id(self) -> str:
+        """Describe the selected transport without persisting private endpoint details."""
+        if self.llm_base_url == DASHSCOPE_OPENAI_BASE_URL:
+            return "dashscope-openai-compatible"
+        return "openai-compatible"
 
     @classmethod
     def from_env(cls, source: Mapping[str, str] | None = None) -> Settings:
@@ -65,11 +95,14 @@ class Settings(BaseModel):
                 raise ValueError(f"{name} must be an integer") from exc
 
         api_key = values.get("DASHSCOPE_API_KEY")
+        llm_api_key = values.get("VRO_LLM_API_KEY")
         dataset_root = values.get("VRO_DATASET_ROOT")
         dataset_profile = values.get("VRO_DATASET_PROFILE")
         return cls(
             dashscope_api_key=None if not api_key else SecretStr(api_key),
+            llm_api_key=SecretStr(llm_api_key) if llm_api_key and llm_api_key.strip() else None,
             llm_model=values.get("VRO_LLM_MODEL", "qwen-plus"),
+            llm_base_url=values.get("VRO_LLM_BASE_URL", DASHSCOPE_OPENAI_BASE_URL),
             dataset_root=Path(dataset_root) if dataset_root and dataset_root.strip() else None,
             dataset_profile_path=Path(dataset_profile)
             if dataset_profile and dataset_profile.strip()
@@ -82,6 +115,17 @@ class Settings(BaseModel):
             ),
             arxiv_timeout_seconds=parse_int("VRO_ARXIV_TIMEOUT_SECONDS", 20),
         )
+
+    def require_llm_api_key(self) -> SecretStr:
+        """Select the explicit key; never forward a legacy key to a custom endpoint."""
+        if self.llm_api_key is not None and self.llm_api_key.get_secret_value().strip():
+            return self.llm_api_key
+        if self.llm_base_url != DASHSCOPE_OPENAI_BASE_URL:
+            raise ValueError("VRO_LLM_API_KEY is required for a custom LLM endpoint")
+        if self.dashscope_api_key is None or not self.dashscope_api_key.get_secret_value().strip():
+            # Preserve the legacy CLI's stable missing-key error for the default endpoint.
+            raise ValueError("DASHSCOPE_API_KEY is required for live LLM mode")
+        return self.dashscope_api_key
 
     def require_dashscope_api_key(self) -> str:
         """Return the live key or fail explicitly without exposing a secret value."""

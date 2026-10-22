@@ -35,9 +35,10 @@ $vroRunRoot = Join-Path $WorkspaceRoot $vroWorkflowId
 $vroEnvFile = Join-Path $vroRepositoryRoot ".env"
 
 if (-not $SampleMode -and -not $DryRun -and
+    [string]::IsNullOrWhiteSpace($env:VRO_LLM_API_KEY) -and
     [string]::IsNullOrWhiteSpace($env:DASHSCOPE_API_KEY) -and
     -not (Test-Path -LiteralPath $vroEnvFile)) {
-    throw "DashScope configuration missing. Copy .env.example to .env and set DASHSCOPE_API_KEY."
+    throw "LLM configuration missing. Configure VRO_LLM_API_KEY and VRO_LLM_BASE_URL, or legacy DASHSCOPE_API_KEY, in your local .env."
 }
 
 if ($Mode -eq "agent") {
@@ -77,7 +78,8 @@ if ($DryRun) {
         workflow_id = $vroWorkflowId
         run_root = $vroRunRoot
         command = "uv " + ($vroArguments -join " ")
-        api_key_present = -not [string]::IsNullOrWhiteSpace($env:DASHSCOPE_API_KEY)
+        api_key_present = (-not [string]::IsNullOrWhiteSpace($env:VRO_LLM_API_KEY)) -or
+            (-not [string]::IsNullOrWhiteSpace($env:DASHSCOPE_API_KEY))
         env_file_present = Test-Path -LiteralPath $vroEnvFile
     } | ConvertTo-Json
     exit 0

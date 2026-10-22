@@ -104,5 +104,8 @@ def build_dashscope_research_planner(
         )
 
     return LangGraphResearchPlanner(
-        bind, model_id=settings.llm_model, before_model_call=before_model_call
+        bind,
+        model_id=settings.llm_model,
+        provider_id=settings.llm_provider_id,
+        before_model_call=before_model_call,
     )

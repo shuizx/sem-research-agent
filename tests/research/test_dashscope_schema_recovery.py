@@ -130,18 +130,21 @@ def _context() -> OperationContext:
 
 def _adapter(
     responses: list[object],
+    provider_id: str = "dashscope-openai-compatible",
 ) -> tuple[DashScopeStructuredLLM, _ScriptedStructuredRunnable, _StubChatModel]:
     runnable = _ScriptedStructuredRunnable(responses)
     client = _StubChatModel(runnable)
     adapter = DashScopeStructuredLLM(
         cast(BaseChatModel, client),
         model_id="qwen-test",
+        provider_id=provider_id,
     )
     return adapter, runnable, client
 
 
 @pytest.mark.asyncio
-async def test_valid_first_response_uses_one_provider_attempt() -> None:
+@pytest.mark.parametrize("provider_id", ["dashscope-openai-compatible", "openai-compatible"])
+async def test_valid_first_response_uses_one_provider_attempt(provider_id: str) -> None:
     """an already-valid result keeps the normal one-call path."""
     decision = _decision()
     adapter, runnable, client = _adapter(
@@ -151,12 +154,14 @@ async def test_valid_first_response_uses_one_provider_attempt() -> None:
                 "parsing_error": None,
                 "raw": _raw(input_tokens=2, output_tokens=3),
             }
-        ]
+        ],
+        provider_id=provider_id,
     )
 
     result = await adapter.generate(_request(), ctx=_context())
 
     assert result.value == decision
+    assert result.provider_id == provider_id
     assert result.usage.input_tokens == 2
     assert result.usage.output_tokens == 3
     assert result.usage.total_tokens == 5

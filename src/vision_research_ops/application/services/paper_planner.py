@@ -75,10 +75,12 @@ class LangGraphResearchPlanner:
         agent_factory: Callable[[Sequence[BaseTool]], RepositoryInsightToolAgent],
         *,
         model_id: str,
+        provider_id: str = "research-tool-loop",
         before_model_call: Callable[[], None] | None = None,
     ) -> None:
         self.agent_factory = agent_factory
         self.model_id = model_id
+        self.provider_id = provider_id
         self.before_model_call = before_model_call
         self.last_tools: list[str] = []
 
@@ -189,7 +191,7 @@ class LangGraphResearchPlanner:
             digest = "sha256:" + sha256(assessment.model_dump_json().encode()).hexdigest()
             generation = GenerationRecord(
                 schema_version="1",
-                provider_id="research-tool-loop",
+                provider_id=self.provider_id,
                 model_id=self.model_id,
                 prompt_template_id="research-tool-loop",
                 prompt_version="1",

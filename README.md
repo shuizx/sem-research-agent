@@ -72,12 +72,13 @@ scripted structured model responses, and deterministic CPU training. Remove
 `--auto-approve-sample` to enter each decision interactively. Scripted sample approvals still
 resume the same LangGraph interrupts used by interactive decisions.
 
-### DashScope configuration
+### LLM configuration (DashScope or an explicit OpenAI-compatible gateway)
 
-Copy `.env.example` to `.env`, replace the API-key placeholder, and keep `.env` untracked:
+If `.env` does not already exist, copy `.env.example` to `.env`. Edit it locally and keep it
+untracked; never replace an existing secret file or put a real key in `.env.example`:
 
 ```powershell
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
 ```dotenv
@@ -86,13 +87,35 @@ VRO_LLM_MODEL=qwen-plus
 VRO_DATASET_ROOT=
 ```
 
+For the user-selected SHU gateway, use these settings in your local `.env` instead:
+
+```dotenv
+VRO_LLM_BASE_URL=https://claw.shu.edu.cn/api/v1
+VRO_LLM_MODEL=Qwen3.8-MAX
+VRO_LLM_API_KEY=replace-with-your-shu-api-key
+```
+
+Do not append `/chat/completions` to the base URL. The model ID is passed exactly as configured.
+The generic key takes precedence; a custom endpoint requires its own `VRO_LLM_API_KEY` and never
+falls back to `DASHSCOPE_API_KEY`. Process variables override `.env` for the same name. Recheck
+old process variables when switching gateways. HTTPS is required; credentials, query parameters
+and fragments are rejected in the base URL. `.gitignore` prevents ordinary accidental commits,
+not local file access or encryption. Do not paste keys into chats, screenshots or shell history.
+
+Configuration support is not a live capability guarantee: this gateway/model must support
+OpenAI-compatible Chat Completions, function/tool calls and schema-bound output. SHU authentication
+and live tool/schema compatibility have not been verified. Provider errors remain explicit; there
+is no automatic retry against a different gateway/model and no unstructured-output fallback.
+Legacy code/CLI names such as `dashscope` and `DASHSCOPE_TOOL_CALLING` identify the existing adapter
+path, not a vendor claim; recorded provider IDs are `openai-compatible` for custom endpoints.
+
 Start the conversational interface:
 
 ```powershell
 .\scripts\run-agent.cmd
 ```
 
-The live path uses `langchain_openai.ChatOpenAI` with DashScope's OpenAI-compatible endpoint,
+The live path uses `langchain_openai.ChatOpenAI` with the selected OpenAI-compatible endpoint,
 `temperature=0`, and structured output. The central settings layer reads configuration at the CLI
 boundary. Missing credentials or invalid structured responses fail explicitly.
 

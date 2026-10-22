@@ -253,6 +253,8 @@ async def test_dashscope_planner_mode_without_key_fails_explicitly_before_graph(
 ) -> None:
     """tool-calling planner live opt-in never silently falls back to scripted planning."""
     monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.delenv("VRO_LLM_API_KEY", raising=False)
+    monkeypatch.delenv("VRO_LLM_BASE_URL", raising=False)
     options = PipelineCliOptions(
         mode="fixture",
         adaptation_planner_mode="dashscope",
