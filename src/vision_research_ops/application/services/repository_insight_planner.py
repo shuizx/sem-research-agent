@@ -12,6 +12,7 @@ from langchain_core.messages import AIMessage, AnyMessage, HumanMessage, SystemM
 from langchain_core.tools import BaseTool, ToolException, tool
 from langgraph.graph import START, StateGraph, add_messages
 from langgraph.prebuilt import ToolNode
+from langgraph.prebuilt.tool_node import ToolInvocationError
 from pydantic import BaseModel, ConfigDict
 
 from vision_research_ops.adapters.repositories import BoundedZipSourceReader
@@ -240,6 +241,7 @@ class LangGraphRepositoryInsightPlanner:
         executions: list[_ToolExecution] = []
         reads: dict[str, RepositoryReadRecord] = {}
         submitted: list[RepositoryAdaptationAdvice] = []
+        correction_used = False
         summary = _repository_summary(
             resolution=resolution,
             metadata=metadata,
@@ -361,6 +363,48 @@ class LangGraphRepositoryInsightPlanner:
         agent = self._agent_factory(tools)
         allowed_names = frozenset(REPOSITORY_INSIGHT_TOOLS)
 
+        def correct_advice_length(error: ToolInvocationError) -> str:
+            """Expose one value-free observation for declared final list maxima only."""
+            nonlocal correction_used
+            if correction_used or error.tool_name != "submit_adaptation_advice":
+                raise error
+            errors = error.source.errors(
+                include_url=False, include_context=False, include_input=False
+            )
+            properties = RepositoryAdaptationAdvice.model_json_schema()["properties"]
+            feedback: list[JsonObject] = []
+            for item in errors:
+                location = item["loc"]
+                if (
+                    item["type"] != "too_long"
+                    or len(location) != 2
+                    or location[0] != "advice"
+                    or location[1]
+                    not in {
+                        "code_evidence",
+                        "suggestions",
+                        "risks",
+                        "items_to_verify",
+                        "limitations",
+                    }
+                ):
+                    raise error
+                field = str(location[1])
+                feedback.append(
+                    {
+                        "field": f"advice.{field}",
+                        "type": "too_long",
+                        "max_length": properties[field]["maxItems"],
+                    }
+                )
+            if not feedback:
+                raise error
+            correction_used = True
+            observation = record(
+                "submit_adaptation_advice", {}, cast(JsonObject, {"errors": feedback})
+            )
+            return _canonical_bytes(observation).decode("utf-8")
+
         async def call_model(state: RepositoryInsightGraphState) -> RepositoryInsightGraphState:
             turns = state.get("model_turns", 0)
             if turns >= MAX_MODEL_TURNS:
@@ -425,10 +469,17 @@ class LangGraphRepositoryInsightPlanner:
 
         builder = StateGraph(RepositoryInsightGraphState)
         builder.add_node("code_reader_model", call_model)
-        builder.add_node("tools", ToolNode(tools, handle_tool_errors=False))
+        builder.add_node("tools", ToolNode(tools, handle_tool_errors=correct_advice_length))
         builder.add_edge(START, "code_reader_model")
         builder.add_conditional_edges("code_reader_model", route)
-        builder.add_edge("tools", "code_reader_model")
+
+        def after_tools(
+            state: RepositoryInsightGraphState,
+        ) -> Literal["code_reader_model", "__end__"]:
+            # A validated final submission needs no extra model turn to announce completion.
+            return "__end__" if submitted else "code_reader_model"
+
+        builder.add_conditional_edges("tools", after_tools)
         graph = builder.compile()
         self.last_graph_nodes = frozenset(graph.get_graph().nodes)
         started = monotonic()

@@ -183,7 +183,7 @@ class RepositoryInsightGeneration(RepositoryInsightModel):
     planner_kind: Literal["SCRIPTED_TOOL_CALLING", "DASHSCOPE_TOOL_CALLING"]
     provider_id: NonBlankStr
     model_id: NonBlankStr
-    prompt_version: Literal["1.0.0"] = "1.0.0"
+    prompt_version: Literal["1.0.0", "1.0.1"] = "1.0.1"
     prompt_hash: ContentHash
     output_hash: ContentHash
     input_tokens: int = Field(ge=0)
