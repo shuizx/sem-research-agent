@@ -269,6 +269,13 @@ async def run(
         initial_lookback_hours=lookback_hours,
         clock=clock,
     )
+    if live_settings is not None:
+        from vision_research_ops.adapters.llm.research import build_dashscope_research_planner
+        from vision_research_ops.application.services.supervisor_models import ModelCallBudget
+
+        dependencies.planner = build_dashscope_research_planner(
+            live_settings, before_model_call=ModelCallBudget().consume
+        )
     initial_state = create_initial_state(
         {
             "schema_version": "1",

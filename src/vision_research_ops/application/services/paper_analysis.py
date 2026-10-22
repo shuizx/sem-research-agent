@@ -141,7 +141,11 @@ def _candidate(
             Reason(
                 schema_version="1",
                 code="RESEARCH_HARD_FILTER_ELIGIBLE",
-                message="Public metadata satisfies the classification/Python/PyTorch prefilter.",
+                message=(
+                    "Available evidence is eligible for model relevance assessment."
+                    if hard_filter.mode == "EVIDENCE_ASSESSED"
+                    else "Public metadata satisfies the classification/Python/PyTorch prefilter."
+                ),
             )
         )
     if budget_skipped:
@@ -242,6 +246,18 @@ async def score_assessments(
     scored: list[ResearchPaperAssessment] = []
     used_calls = 0
     for assessment in assessments:
+        if include_ineligible:
+            assessment = assessment.model_copy(
+                update={
+                    "hard_filter": assessment.hard_filter.model_copy(
+                        update={
+                            "mode": "EVIDENCE_ASSESSED",
+                            "eligible": True,
+                            "reasons": [],
+                        }
+                    )
+                }
+            )
         if not assessment.hard_filter.eligible and not include_ineligible:
             scored.append(assessment)
             continue
@@ -264,6 +280,21 @@ async def score_assessments(
             applicability_request(assessment.paper, problem),
             ctx=ctx,
         )
+        if include_ineligible:
+            notes: list[str] = []
+            if not assessment.hard_filter.python_match or not assessment.hard_filter.pytorch_match:
+                notes.append(
+                    "Python/PyTorch metadata unconfirmed; adaptation feasibility is uncertain."
+                )
+            if not assessment.paper.code_urls:
+                notes.append("No public code link found in retrieved metadata.")
+            result = result.model_copy(
+                update={
+                    "value": result.value.model_copy(
+                        update={"risks": (notes + result.value.risks)[:10]}
+                    )
+                }
+            )
         used_calls += 1
         generation = GenerationRecord(
             schema_version="1",

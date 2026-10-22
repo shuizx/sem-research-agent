@@ -134,6 +134,7 @@ class HardFilterDecision(ResearchModel):
 
     schema_version: Literal["1"] = "1"
     eligible: StrictBoolean
+    mode: Literal["LEGACY_METADATA", "EVIDENCE_ASSESSED"] = "LEGACY_METADATA"
     classification_match: StrictBoolean
     python_match: StrictBoolean
     pytorch_match: StrictBoolean
@@ -143,10 +144,12 @@ class HardFilterDecision(ResearchModel):
 
     @model_validator(mode="after")
     def _eligibility_matches_components(self) -> HardFilterDecision:
-        expected = self.classification_match and self.python_match and self.pytorch_match
+        expected = self.mode == "EVIDENCE_ASSESSED" or (
+            self.classification_match and self.python_match and self.pytorch_match
+        )
         if self.eligible is not expected:
             raise ValueError(
-                "eligible must equal the classification, Python, and PyTorch hard-filter components"
+                "eligible must match evidence-assessed mode or legacy metadata components"
             )
         return self
 

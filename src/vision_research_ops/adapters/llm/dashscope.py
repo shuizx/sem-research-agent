@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from datetime import UTC, datetime
 from hashlib import sha256
 from time import monotonic
@@ -193,11 +194,18 @@ def _finish_reason(raw: object) -> str:
 class DashScopeStructuredLLM:
     """Use ChatOpenAI transport while enforcing the requested Pydantic schema."""
 
-    def __init__(self, client: BaseChatModel, *, model_id: str) -> None:
+    def __init__(
+        self,
+        client: BaseChatModel,
+        *,
+        model_id: str,
+        before_model_call: Callable[[], None] | None = None,
+    ) -> None:
         if not model_id.strip():
             raise ValueError("model_id must not be blank")
         self._client = client
         self._model_id = model_id
+        self._before_model_call = before_model_call
 
     @staticmethod
     def _prompt(request: StructuredGenerationRequest[BaseModel]) -> str:
@@ -258,6 +266,8 @@ class DashScopeStructuredLLM:
             if repair_hints is not None:
                 messages.append(SystemMessage(content=_repair_instruction(repair_hints)))
             messages.append(HumanMessage(content=facts_json))
+            if self._before_model_call is not None:
+                self._before_model_call()
             try:
                 response = await structured.ainvoke(messages)
             except Exception:
@@ -340,10 +350,14 @@ def build_dashscope_chat_model(settings: Settings) -> ChatOpenAI:
     )
 
 
-def build_dashscope_llm(settings: Settings) -> DashScopeStructuredLLM:
+def build_dashscope_llm(
+    settings: Settings, *, before_model_call: Callable[[], None] | None = None
+) -> DashScopeStructuredLLM:
     """Build the schema-bound LLM adapter over the shared chat transport."""
     client = build_dashscope_chat_model(settings)
-    return DashScopeStructuredLLM(client, model_id=settings.llm_model)
+    return DashScopeStructuredLLM(
+        client, model_id=settings.llm_model, before_model_call=before_model_call
+    )
 
 
 __all__ = ["DashScopeStructuredLLM", "build_dashscope_chat_model", "build_dashscope_llm"]

@@ -127,6 +127,14 @@ async def retrieve_papers(
 ) -> WorkflowState:
     """Retrieve bounded provider pages using the persisted UTC watermark window."""
     dependencies = runtime.context
+    if dependencies.planner is not None:
+        try:
+            dependencies.session.assessments = await dependencies.planner.analyze(
+                dependencies, _ctx(state, dependencies.request, operation="research-tools")
+            )
+        except PortError as error:
+            return _failure(error, code="RESEARCH_TOOL_LOOP_FAILED", message="Research failed.")
+        return {"route": "RETRIEVED"}
     try:
         watermark = dependencies.store.load_watermark()
         now = dependencies.clock()
@@ -183,6 +191,8 @@ async def deduplicate_papers(
     del state
     dependencies = runtime.context
     window = dependencies.session.retrieval_window
+    if dependencies.planner is not None:
+        return {"route": "DEDUPLICATED"}
     if window is None:
         return _failure(
             None,
@@ -216,6 +226,8 @@ async def hard_filter_candidates(
     """Apply classification/Python/PyTorch eligibility before any LLM call."""
     del state
     dependencies = runtime.context
+    if dependencies.planner is not None:
+        return {"route": "FILTERED"}
     dependencies.session.assessments = [
         unscored_assessment(paper, request_id=dependencies.request.request_id)
         for paper in dependencies.session.papers
@@ -230,13 +242,17 @@ async def analyze_applicability(
     """Call the structured LLM only for eligible papers and persist gate evidence."""
     dependencies = runtime.context
     try:
-        assessments = await score_assessments(
-            dependencies.session.assessments,
-            problem=dependencies.problem_profile,
-            request_id=dependencies.request.request_id,
-            llm=dependencies.structured_llm,
-            max_llm_calls=dependencies.request.budget.max_llm_calls,
-            ctx=_ctx(state, dependencies.request, operation="paper-applicability"),
+        assessments = (
+            dependencies.session.assessments
+            if dependencies.planner
+            else await score_assessments(
+                dependencies.session.assessments,
+                problem=dependencies.problem_profile,
+                request_id=dependencies.request.request_id,
+                llm=dependencies.structured_llm,
+                max_llm_calls=dependencies.request.budget.max_llm_calls,
+                ctx=_ctx(state, dependencies.request, operation="paper-applicability"),
+            )
         )
     except PortError as error:
         return _failure(

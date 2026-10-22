@@ -515,13 +515,15 @@ class ConversationSession:
         assert self._settings is not None
         return ArxivPaperProvider(timeout_seconds=self._settings.arxiv_timeout_seconds)
 
-    def _paper_llm(self) -> StructuredLLM:
+    def _paper_llm(self, before_model_call: Callable[[], None] | None = None) -> StructuredLLM:
         if self._mode == "fixture":
             return FixtureStructuredLLM()
         assert self._settings is not None
-        return build_dashscope_llm(self._settings)
+        return build_dashscope_llm(self._settings, before_model_call=before_model_call)
 
-    async def _analyze_arxiv(self, raw_target: str | None) -> WorkerResult | None:
+    async def _analyze_arxiv(
+        self, raw_target: str | None, *, before_model_call: Callable[[], None] | None = None
+    ) -> WorkerResult | None:
         arxiv_id = None if raw_target is None else normalize_arxiv_target(raw_target)
         if arxiv_id is None:
             self._emit("arXiv 分析失败：只接受规范 arXiv abs/pdf URL 或论文 ID。")
@@ -550,7 +552,7 @@ class ConversationSession:
                 [assessment],
                 problem=default_sem_problem_profile(),
                 request_id=f"conversation-{arxiv_id}",
-                llm=self._paper_llm(),
+                llm=self._paper_llm(before_model_call) if before_model_call else self._paper_llm(),
                 max_llm_calls=1,
                 ctx=ctx,
                 include_ineligible=True,
@@ -627,7 +629,7 @@ class ConversationSession:
             )
             key = (task.worker, task.target)
             if task.worker == "research" and task.target is not None:
-                result = await self._analyze_arxiv(task.target)
+                result = await self._analyze_arxiv(task.target, before_model_call=budget.consume)
                 return result or WorkerResult(worker="research", status="failed")
             if key not in runs:
                 workflow_id = f"{request_id}-{len(runs)}"
@@ -642,7 +644,23 @@ class ConversationSession:
                         approval_recorder=InMemoryApprovalRecorder(),
                         page_size=10,
                         clock=lambda: now,
+                        goal=task.goal,
                     )
+                    if self._mode == "live":
+                        from vision_research_ops.adapters.llm.research import (
+                            build_dashscope_research_planner,
+                        )
+
+                        assert self._settings is not None
+                        deps.planner = build_dashscope_research_planner(
+                            self._settings, before_model_call=budget.consume
+                        )
+                    else:
+                        from vision_research_ops.adapters.llm.research import (
+                            build_scripted_research_planner,
+                        )
+
+                        deps.planner = build_scripted_research_planner()
                     runs[key] = research_worker(deps, workflow_id)
                 else:
                     assert task.target is not None

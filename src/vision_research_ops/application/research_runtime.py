@@ -11,6 +11,7 @@ from vision_research_ops.ports import PaperProvider, StructuredLLM
 
 from .runtime import ApprovalRecorder
 from .services.paper_models import ProblemProfile
+from .services.paper_planner import LangGraphResearchPlanner
 from .services.paper_store import LocalResearchStore, ResearchSession
 
 
@@ -34,6 +35,8 @@ class ResearchDependencies:
     initial_lookback_hours: int = 24
     clock: Callable[[], datetime] = research_utc_now
     session: ResearchSession = field(default_factory=ResearchSession)
+    planner: LangGraphResearchPlanner | None = None
+    goal: str = ""
 
     def __post_init__(self) -> None:
         if self.page_size < 1 or self.page_size > 100:

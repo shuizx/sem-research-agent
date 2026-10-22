@@ -34,7 +34,14 @@ def research_worker(
     )
 
     async def run() -> WorkerResult:
-        await graph.ainvoke(state, context=dependencies)
+        final = await graph.ainvoke(state, context=dependencies)
+        if final.get("route") == "FAILED":
+            failure = final.get("last_error")
+            return WorkerResult(
+                worker="research",
+                status="failed",
+                reason=getattr(failure, "code", "RESEARCH_FAILED"),
+            )
         result = dependencies.store.load_result(workflow_id)
         status = "failed"
         if result.status == "REJECTED":
