@@ -14,14 +14,14 @@ three tasks. Only one implementation task may be active at a time.
 | P6-T12 Research tool loop | DONE | Reviewed `754f05d`; B1–B7 PASS |
 | P6-T13 Profile and context integration | DONE | Reviewed `d3dd8b3`; C1–C7 PASS |
 | P6-T14 Explicit provider configuration | DONE | `2684829`; D1–D5 offline PASS |
-| P6-T15 Bounded conversation live repair | IN_PROGRESS | `2684829`; fixed F1–F7 below |
+| P6-T15 Bounded conversation live repair | DONE | `d24a820`; two review findings closed; separate Code advice failure recorded |
 
-All three tasks have completed their independent fixed-matrix reviews and local integration.
-P6-T15 is the sole active implementation task after the user's subsequent live-verification
-and repair authorization. Remote publication is separate.
-The final offline suite passed 746 tests with one existing Windows symlink skip. Authorized
-live attempts produced mixed results; complete final live paper-to-Code execution and provider
-stability are not claimed as verified. See the P6-T13 handoff for exact evidence and limits.
+The original three tasks completed independent fixed-matrix reviews and local integration.
+P6-T15 closes the URL and Supervisor defects after one review and one bounded repair, with
+783 offline tests passing and one existing Windows symlink skip. Real paper analysis, research
+retrieval and repository approval routing passed; Code advice submission exposed a separate
+oversized-list validation failure. That failure is not hidden by the P6-T15 completion status;
+see its handoff before starting the separately scoped follow-up. Remote publication is separate.
 
 ## Shared decisions
 

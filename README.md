@@ -91,7 +91,7 @@ For the user-selected SHU gateway, use these settings in your local `.env` inste
 
 ```dotenv
 VRO_LLM_BASE_URL=https://claw.shu.edu.cn/api/v1
-VRO_LLM_MODEL=Qwen3.8-MAX
+VRO_LLM_MODEL=qwen3.8-max
 VRO_LLM_API_KEY=replace-with-your-shu-api-key
 ```
 
@@ -103,9 +103,13 @@ and fragments are rejected in the base URL. `.gitignore` prevents ordinary accid
 not local file access or encryption. Do not paste keys into chats, screenshots or shell history.
 
 Configuration support is not a live capability guarantee: this gateway/model must support
-OpenAI-compatible Chat Completions, function/tool calls and schema-bound output. SHU authentication
-and live tool/schema compatibility have not been verified. Provider errors remain explicit; there
-is no automatic retry against a different gateway/model and no unstructured-output fallback.
+OpenAI-compatible Chat Completions, function/tool calls and schema-bound output. A bounded SHU
+check using the exact model ID above verified authentication, Supervisor routing, paper analysis,
+and research retrieval. Code reading reached final submission, but oversized advice lists failed
+validation; complete successful Code advice is not yet verified for this configuration. See
+[P6-T15 evidence](docs/handoffs/P6-T15.md). Supervisor schema failures permit one sanitized
+correction within the existing call budget. Provider errors remain explicit; there is no automatic
+retry against a different gateway/model and no unstructured-output fallback.
 Legacy code/CLI names such as `dashscope` and `DASHSCOPE_TOOL_CALLING` identify the existing adapter
 path, not a vendor claim; recorded provider IDs are `openai-compatible` for custom endpoints.
 
