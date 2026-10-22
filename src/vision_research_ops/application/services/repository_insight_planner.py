@@ -209,6 +209,7 @@ class LangGraphRepositoryInsightPlanner:
         planner_kind: Literal["SCRIPTED_TOOL_CALLING", "DASHSCOPE_TOOL_CALLING"],
         provider_id: str,
         model_id: str,
+        before_model_call: Callable[[], None] | None = None,
     ) -> None:
         if not provider_id.strip() or not model_id.strip():
             raise ValueError("repository insight provider and model IDs must be non-blank")
@@ -216,6 +217,7 @@ class LangGraphRepositoryInsightPlanner:
         self._planner_kind = planner_kind
         self._provider_id = provider_id
         self._model_id = model_id
+        self._before_model_call = before_model_call
         self.last_graph_nodes: frozenset[str] = frozenset()
         self.last_tool_names: tuple[RepositoryInsightToolName, ...] = ()
 
@@ -359,6 +361,8 @@ class LangGraphRepositoryInsightPlanner:
                     message="The bounded repository code-reading loop exceeded its turn limit.",
                     ctx=ctx,
                 )
+            if self._before_model_call is not None:
+                self._before_model_call()
             try:
                 response = await agent.ainvoke(state["messages"])
             except PortError:

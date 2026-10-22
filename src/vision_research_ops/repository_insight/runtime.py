@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Literal
 
@@ -32,13 +33,16 @@ def build_repository_insight_dependencies(
     mode: RepositoryInsightMode,
     settings: Settings | None,
     fixture_transport: FixtureGitHubInsightTransport | None = None,
+    before_model_call: Callable[[], None] | None = None,
 ) -> RepositoryInsightDependencies:
     """Compose existing GitHub/static adapters with one four-tool code-reading planner."""
     if mode == "live":
         if settings is None:
             raise ValueError("live repository insight requires injected Settings")
         provider = GitHubRepositoryProvider(artifact_root=workspace)
-        planner = build_dashscope_repository_insight_planner(settings)
+        planner = build_dashscope_repository_insight_planner(
+            settings, before_model_call=before_model_call
+        )
     else:
         provider = GitHubRepositoryProvider(
             artifact_root=workspace,

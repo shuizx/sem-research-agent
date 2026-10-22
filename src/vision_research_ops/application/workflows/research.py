@@ -39,6 +39,7 @@ def _pipeline_memory_saver() -> InMemorySaver:
 def build_research_graph(
     *,
     checkpointer: BaseCheckpointSaver[str] | None = None,
+    inherit_checkpointer: bool = False,
 ) -> CompiledStateGraph[WorkflowState, ResearchDependencies, WorkflowState, WorkflowState]:
     """Compile retrieve -> dedupe -> filter -> LLM -> interrupt -> persist."""
     saver = checkpointer if checkpointer is not None else _pipeline_memory_saver()
@@ -81,7 +82,7 @@ def build_research_graph(
     )
     builder.add_edge("candidate_selection_gate", "finalize_research_selection")
     builder.add_edge("finalize_research_selection", END)
-    return builder.compile(checkpointer=saver)
+    return builder.compile(checkpointer=None if inherit_checkpointer else saver)
 
 
 __all__ = ["build_research_graph"]

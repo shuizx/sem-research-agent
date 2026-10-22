@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import cast
 
 from langchain_core.tools import BaseTool
@@ -18,6 +18,8 @@ from .dashscope import build_dashscope_chat_model
 
 def build_dashscope_repository_insight_planner(
     settings: Settings,
+    *,
+    before_model_call: Callable[[], None] | None = None,
 ) -> LangGraphRepositoryInsightPlanner:
     """Bind exactly the four repository-insight tools to live DashScope ChatOpenAI."""
     client = build_dashscope_chat_model(settings)
@@ -37,6 +39,7 @@ def build_dashscope_repository_insight_planner(
         planner_kind="DASHSCOPE_TOOL_CALLING",
         provider_id="dashscope-openai-compatible",
         model_id=settings.llm_model,
+        before_model_call=before_model_call,
     )
 
 

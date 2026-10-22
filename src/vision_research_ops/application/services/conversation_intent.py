@@ -158,6 +158,11 @@ def has_ambiguous_supported_targets(message: str) -> bool:
     return len(_supported_targets(message.strip())) > 1
 
 
+def supported_targets(message: str) -> list[ConversationIntent]:
+    """Return validated explicit public targets without selecting a worker."""
+    return _supported_targets(message)
+
+
 def deterministic_intent(message: str) -> ConversationIntent | None:
     """Recognize commands and canonical URL/ID inputs without invoking an LLM."""
     stripped = message.strip()

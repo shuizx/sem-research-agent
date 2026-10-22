@@ -20,6 +20,7 @@ from ..repository_insight_runtime import RepositoryInsightDependencies, Reposito
 def build_repository_insight_graph(
     *,
     checkpointer: BaseCheckpointSaver[str] | None = None,
+    inherit_checkpointer: bool = False,
 ) -> CompiledStateGraph[
     RepositoryInsightState,
     RepositoryInsightDependencies,
@@ -43,7 +44,9 @@ def build_repository_insight_graph(
         {"ANALYZE": "analyze_approved_snapshot", "REJECTED": END},
     )
     builder.add_edge("analyze_approved_snapshot", END)
-    return builder.compile(checkpointer=checkpointer or InMemorySaver())
+    return builder.compile(
+        checkpointer=None if inherit_checkpointer else (checkpointer or InMemorySaver())
+    )
 
 
 __all__ = ["build_repository_insight_graph"]

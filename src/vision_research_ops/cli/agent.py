@@ -13,6 +13,10 @@ from typing import Literal, cast
 from pydantic import ValidationError
 
 from vision_research_ops.adapters.llm import build_dashscope_chat_model
+from vision_research_ops.adapters.llm.supervisor import (
+    DashScopeSupervisorPolicy,
+    ScriptedSupervisorPolicy,
+)
 from vision_research_ops.application.services.conversation_intent import (
     ConversationIntent,
     ConversationRoutingError,
@@ -139,6 +143,11 @@ async def run(
         output_fn=output_fn,
         settings=resolved_settings,
         context_path=options.context_path,
+        supervisor_policy=(
+            ScriptedSupervisorPolicy()
+            if options.router_mode == "fixture"
+            else DashScopeSupervisorPolicy(resolved_settings)
+        ),
     )
     for line in session.introduction():
         output_fn(line)

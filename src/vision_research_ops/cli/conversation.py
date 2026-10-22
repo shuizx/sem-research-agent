@@ -14,9 +14,12 @@ from langgraph.types import Command
 
 from vision_research_ops.adapters.llm import FixtureStructuredLLM, build_dashscope_llm
 from vision_research_ops.adapters.papers import ArxivPaperProvider
+from vision_research_ops.application.agents.workers import code_worker, research_worker
 from vision_research_ops.application.repository_insight_runtime import (
     create_repository_insight_state,
 )
+from vision_research_ops.application.research_runtime import ResearchDependencies
+from vision_research_ops.application.runtime import InMemoryApprovalRecorder
 from vision_research_ops.application.services.conversation_context import (
     ConversationContext,
     ConversationContextStoreError,
@@ -46,10 +49,17 @@ from vision_research_ops.application.services.paper_store import LocalResearchSt
 from vision_research_ops.application.services.repository_insight_models import (
     RepositoryInsightResult,
 )
+from vision_research_ops.application.services.supervisor_models import (
+    ModelCallBudget,
+    SupervisorPolicy,
+    WorkerResult,
+    WorkerTask,
+)
 from vision_research_ops.application.workflows import (
     build_repository_insight_graph,
     workflow_config,
 )
+from vision_research_ops.application.workflows.supervisor import build_supervisor_graph
 from vision_research_ops.cli import pipeline, research
 from vision_research_ops.domain import Approval, ApprovalDecision, GateKind
 from vision_research_ops.ports import ExternalPaperId, OperationContext, PortError, StructuredLLM
@@ -125,6 +135,7 @@ class ConversationSession:
         settings: Settings | None = None,
         context_path: Path | None = None,
         clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+        supervisor_policy: SupervisorPolicy | None = None,
     ) -> None:
         self._workspace = workspace
         self._mode = mode
@@ -134,6 +145,7 @@ class ConversationSession:
         self._fixture_xml = fixture_xml
         self._settings = settings
         self._clock = clock
+        self._supervisor_policy = supervisor_policy
         self._debug_json = False
         self._turns = 0
         self._last_intent: ConversationIntentName | None = None
@@ -226,6 +238,19 @@ class ConversationSession:
             self._emit(f"调试 JSON：{'开启' if self._debug_json else '关闭'}。")
             return True
         intent = deterministic_intent(stripped)
+        local_intents = {
+            ConversationIntentName.EXIT,
+            ConversationIntentName.SHOW_HELP,
+            ConversationIntentName.SHOW_STATUS,
+            ConversationIntentName.SHOW_CURRENT_PAPER,
+            ConversationIntentName.CONTINUE_CURRENT_PAPER,
+            ConversationIntentName.RUN_PIPELINE_SAMPLE,
+        }
+        if self._supervisor_policy is not None and (
+            intent is None or intent.intent not in local_intents
+        ):
+            await self._run_supervisor(stripped)
+            return True
         if intent is None:
             try:
                 intent = await self._router.route(stripped)
@@ -496,11 +521,11 @@ class ConversationSession:
         assert self._settings is not None
         return build_dashscope_llm(self._settings)
 
-    async def _analyze_arxiv(self, raw_target: str | None) -> None:
+    async def _analyze_arxiv(self, raw_target: str | None) -> WorkerResult | None:
         arxiv_id = None if raw_target is None else normalize_arxiv_target(raw_target)
         if arxiv_id is None:
             self._emit("arXiv 分析失败：只接受规范 arXiv abs/pdf URL 或论文 ID。")
-            return
+            return None
         ctx = OperationContext(
             schema_version="1",
             correlation_id=f"conversation-arxiv-{uuid4().hex[:12]}",
@@ -515,11 +540,11 @@ class ConversationSession:
             )
             if record is None:
                 self._emit(f"arXiv 分析失败：未找到 {arxiv_id}。")
-                return
+                return None
             paper = normalize_raw_paper(record)
             if paper.arxiv_id != arxiv_id:
                 self._emit(f"arXiv 分析失败：未找到 {arxiv_id}。")
-                return
+                return None
             assessment = unscored_assessment(paper, request_id=f"conversation-{arxiv_id}")
             scored = await score_assessments(
                 [assessment],
@@ -540,14 +565,14 @@ class ConversationSession:
                     self._emit("调试错误码：LLM_SCHEMA_VALIDATION_FAILED。")
             else:
                 self._emit(f"arXiv 分析失败：{error.failure.code}。")
-            return
+            return None
         except (OSError, TypeError, ValueError):
             self._emit("arXiv 分析失败：ARXIV_ANALYSIS_FAILED。")
-            return
+            return None
         decision = scored[0].applicability
         if decision is None:
             self._emit("arXiv 分析失败：ARXIV_ANALYSIS_SCHEMA_FAILED。")
-            return
+            return None
         relative_ref = f"papers/{arxiv_id}/assessment.json"
         artifact_path = self._workspace / "papers" / arxiv_id / "assessment.json"
         try:
@@ -555,7 +580,7 @@ class ConversationSession:
             artifact_path.write_text(scored[0].model_dump_json(indent=2), encoding="utf-8")
         except OSError:
             self._emit("arXiv 分析失败：ASSESSMENT_ARTIFACT_WRITE_FAILED。")
-            return
+            return None
         memory_saved = self._set_current_paper_from_assessment(scored[0], relative_ref)
         code_status = (
             "当前元数据中已发现公开代码链接"
@@ -575,6 +600,149 @@ class ConversationSession:
         )
         if not memory_saved:
             self._emit_memory_write_warning()
+
+        return WorkerResult(
+            worker="research",
+            status="success",
+            artifact_ref=relative_ref,
+            code_urls=[url for url in paper.code_urls if normalize_github_target(url) == url][:5],
+        )
+
+    async def _run_supervisor(self, goal: str) -> None:
+        """Present only top-level interrupts and resume the pending supervisor request."""
+        assert self._supervisor_policy is not None
+        request_id = f"supervisor-{uuid4().hex[:12]}"
+        budget = ModelCallBudget()
+        runs: dict[tuple[str, str | None], Callable[[], object]] = {}
+
+        async def worker(task: WorkerTask) -> WorkerResult:
+            self._last_intent = (
+                ConversationIntentName.ANALYZE_GITHUB_REPOSITORY
+                if task.worker == "code"
+                else (
+                    ConversationIntentName.ANALYZE_ARXIV_PAPER
+                    if task.target
+                    else ConversationIntentName.RESEARCH_LATEST
+                )
+            )
+            key = (task.worker, task.target)
+            if task.worker == "research" and task.target is not None:
+                result = await self._analyze_arxiv(task.target)
+                return result or WorkerResult(worker="research", status="failed")
+            if key not in runs:
+                workflow_id = f"{request_id}-{len(runs)}"
+                if task.worker == "research":
+                    now = research.FIXTURE_NOW if self._mode == "fixture" else self._clock()
+                    deps = ResearchDependencies(
+                        request=research._research_request(request_id=workflow_id, now=now),
+                        problem_profile=default_sem_problem_profile(),
+                        paper_provider=self._paper_provider(),
+                        structured_llm=self._paper_llm(),
+                        store=LocalResearchStore(self._workspace / "research"),
+                        approval_recorder=InMemoryApprovalRecorder(),
+                        page_size=10,
+                        clock=lambda: now,
+                    )
+                    runs[key] = research_worker(deps, workflow_id)
+                else:
+                    assert task.target is not None
+                    code_deps = build_repository_insight_dependencies(
+                        workspace=self._workspace,
+                        mode=self._mode,
+                        settings=self._settings,
+                        before_model_call=budget.consume,
+                    )
+                    runs[key] = code_worker(code_deps, workflow_id, task.target)
+            from collections.abc import Awaitable
+
+            result = await cast(Awaitable[WorkerResult], runs[key]())
+            if result.status == "success" and result.artifact_ref:
+                if result.worker == "research":
+                    workflow_id = result.artifact_ref.split("/")[1]
+                    stored = LocalResearchStore(self._workspace / "research").load_result(
+                        workflow_id
+                    )
+                    selected = [item for item in stored.assessments if item.selected]
+                    if len(selected) == 1:
+                        self._set_current_paper_from_assessment(selected[0], result.artifact_ref)
+                        self._emit(f"当前论文：{selected[0].paper.title}。")
+                else:
+                    from vision_research_ops.application.services.repository_insight_store import (
+                        LocalRepositoryInsightStore,
+                    )
+
+                    stored_code = LocalRepositoryInsightStore(self._workspace).load_result(
+                        f"{request_id}-{list(runs).index(key)}"
+                    )
+                    self._set_current_repository_from_result(stored_code)
+                    self._emit(
+                        f"公开 GitHub 代码分析完成：{stored_code.repository_url}；"
+                        f"固定 commit：{stored_code.resolution.commit_sha}；"
+                        f"适配程度：{stored_code.advice.adaptation_fit}。\n"
+                        f"代码概要：{stored_code.advice.repository_summary}"
+                    )
+            if result.worker == "code" and result.status == "rejected":
+                self._emit(
+                    "已按人工决定取消公开仓库分析；未访问 GitHub、未下载源码快照、未调用代码 LLM。"
+                )
+            self._emit(f"{result.worker}：{result.status}；产物：{result.artifact_ref or '无'}。")
+            return result
+
+        graph = build_supervisor_graph(
+            policy=self._supervisor_policy,
+            worker=worker,
+            budget=budget,
+            context_code_urls=tuple(self._current_paper.code_urls) if self._current_paper else (),
+        )
+        config = workflow_config(request_id)
+        final = await graph.ainvoke(
+            {
+                "goal": goal,
+                "observations": [],
+                "proposal": {},
+                "delegations": 0,
+                "failure_code": None,
+            },
+            config=config,
+        )
+        payload = self._repository_gate_payload(cast(Mapping[str, object], final))
+        while payload is not None:
+            if payload.get("gate_kind") == GateKind.REPOSITORY_INGEST:
+                approval = self._repository_snapshot_approval(payload)
+            else:
+                events = [json.dumps(payload, ensure_ascii=False)]
+                decision = self._ask_gate(events)("approve/edit/reject")
+                selected = []
+                if decision == "edit":
+                    selected = [
+                        item.strip()
+                        for item in self._input_fn("Paper IDs (comma separated): ").split(",")
+                        if item.strip()
+                    ]
+                approval = research._approval(
+                    payload,
+                    workflow_id=request_id,
+                    decision=cast(research.Decision, decision),
+                    selected_ids=selected,
+                    decided_at=self._clock(),
+                )
+            final = await graph.ainvoke(
+                Command(resume=approval.model_dump(mode="json")), config=config
+            )
+            payload = self._repository_gate_payload(cast(Mapping[str, object], final))
+        trace = {
+            "delegations": final["delegations"],
+            "observations": final["observations"],
+            "failure_code": final["failure_code"],
+            "model_calls": budget.used,
+        }
+        path = self._workspace / "supervisor" / f"{request_id}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(trace, ensure_ascii=False, indent=2), encoding="utf-8")
+        if final["failure_code"]:
+            self._emit(f"主任务失败：{final['failure_code']}。")
+        elif not final["observations"]:
+            self._emit("未委派：请提供明确的论文检索或公开仓库分析请求。")
 
     @staticmethod
     def _repository_gate_payload(value: Mapping[str, object]) -> dict[str, object] | None:
